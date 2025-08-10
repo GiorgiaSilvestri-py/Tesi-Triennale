@@ -1,5 +1,7 @@
 def read_file(nome_file):
-
+    '''
+    legge il file
+    '''
     with open(nome_file, 'r') as f:
             in_event = False
             event_lines = []
