@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import math
 import numpy as np
 import vector
-import seaborn as sns
+import seaborn as sb
 from utils import read_file
 import sys
 
@@ -80,19 +80,19 @@ def main():
     bin_width = 2 * iqr / (len(data) ** (1/3))
     n_binsW = int((max(data) - min(data)) / bin_width)
     
-    sns.set(style="whitegrid")
+    sb.set(style="whitegrid")
     fig, ax = plt.subplots(1, 2, figsize=(16, 5))
     plt.subplots_adjust(wspace=0.5)
        
-    sns.histplot(pt_Z_L, bins=n_binsZ, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[0],  label='Polarizzazione longitudinale',  alpha = 0.8)
-    sns.histplot(pt_Z_T, bins=n_binsZ, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5, alpha = 0.4, ax=ax[0], label='Polarizzazione trasversa')
+    sb.histplot(pt_Z_L, bins=n_binsZ, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[0],  label='Polarizzazione longitudinale',  alpha = 0.8)
+    sb.histplot(pt_Z_T, bins=n_binsZ, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5, alpha = 0.4, ax=ax[0], label='Polarizzazione trasversa')
     ax[0].set_xlabel("Momento trasverso (GeV)")
     ax[0].set_ylabel("Densità")
     ax[0].set_title("Distribuzione momento Z")
     ax[0].legend()
     
-    sns.histplot(pt_W_L, bins=n_binsW, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[1], label='Polarizzazione longitudinale',  alpha = 0.8)
-    sns.histplot(pt_W_T, bins=n_binsW, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5,  alpha = 0.4,
+    sb.histplot(pt_W_L, bins=n_binsW, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[1], label='Polarizzazione longitudinale',  alpha = 0.8)
+    sb.histplot(pt_W_T, bins=n_binsW, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5,  alpha = 0.4,
              ax=ax[1], label='Polarizzazione trasversa')
     ax[1].set_xlabel("Momento trasverso (GeV)")
     ax[1].set_ylabel("Densità")
@@ -102,9 +102,10 @@ def main():
     #plt.savefig("Confronto momento trasverso.png", dpi=300)
     plt.show()
     
+    
     #confronto polarizzazioni W
-    height_L, b = np.histogram(pt_W_L, n_binsZ)         #altezza delle colonne della distribuzione longitudinale
-    height_T, b_t = np.histogram(pt_W_T, n_binsZ)       #altezza delle colonne della distribuzione trasversale
+    height_L, b = np.histogram(pt_W_L, 30)         #altezza delle colonne della distribuzione longitudinale
+    height_T, b_t = np.histogram(pt_W_T, 30)       #altezza delle colonne della distribuzione trasversale
     #print(len(height_L), len(height_T))
     
     height_tot = np.array([x+y for x, y in zip(height_L, height_T)])
@@ -114,20 +115,48 @@ def main():
     t_fraction = np.divide(height_T, height_tot, out=np.zeros_like(height_tot, dtype=float), where=height_tot > 0)  #y2
     #print(len(l_fraction), len(t_fraction))
     
-    bin_center = [0.5 * (b[i] + b[i+1]) for i in range(len(b) - 1)]
+    bin_center_W = [0.5 * (b[i] + b[i+1]) for i in range(len(b) - 1)]
     
-    sns.set(style='whitegrid')
+    #confronto polarizzazioni Z
+    height_L_Z, b_Z = np.histogram(pt_Z_L, 30)         #altezza delle colonne della distribuzione longitudinale
+    height_T_Z, b_t_Z = np.histogram(pt_Z_T, 30)       #altezza delle colonne della distribuzione trasversale
+    
+    
+    height_tot_Z = np.array([x+y for x, y in zip(height_L_Z, height_T_Z)])
+    
+    
+    l_fraction_Z = np.divide(height_L_Z, height_tot_Z, out=np.zeros_like(height_tot_Z, dtype=float), where=height_tot_Z > 0)  #y1
+    t_fraction_Z = np.divide(height_T_Z, height_tot_Z, out=np.zeros_like(height_tot_Z, dtype=float), where=height_tot_Z > 0)  #y2
+    
+    bin_center_Z = [0.5 * (b_Z[i] + b_Z[i+1]) for i in range(len(b_Z) - 1)]
+    
+    
+    sb.set(style='whitegrid')
     plt.figure(figsize=(8,5))
     
-    sns.scatterplot(x=bin_center, y=l_fraction, label='Longitudinale', color='royalblue')
-    sns.scatterplot(x=bin_center, y=t_fraction, label='Trasversale', color='firebrick')
+    sb.scatterplot(x=bin_center_W, y=l_fraction, label='Longitudinale', color='royalblue')
+    sb.scatterplot(x=bin_center_W, y=t_fraction, label='Trasversale', color='firebrick')
     
-    plt.title('Confronto frazioni longitudinali e trasversali')
-    plt.xlabel('Centro del bin')
-    plt.ylabel('Frazione')
+    plt.title('Eventi di polarizzazione (W)')
+    plt.xlabel('Momento trasverso (Gev)')
+    plt.ylabel('dN/N')
     plt.legend()
     plt.tight_layout()
     #plt.savefig("Confronto polarizzazioni.png", dpi=300)
+    plt.show()
+    
+    
+    sb.set(style='whitegrid')
+    plt.figure(figsize=(8,5))
+    
+    sb.scatterplot(x=bin_center_Z, y=l_fraction_Z, label='Longitudinale', color='royalblue')
+    sb.scatterplot(x=bin_center_Z, y=t_fraction_Z, label='Trasversale', color='firebrick')
+    
+    plt.title('Eventi di polarizzazione (Z)')
+    plt.xlabel('Momento trasverso (Gev)')
+    plt.ylabel('dN/N')
+    plt.legend()
+    plt.tight_layout()
     plt.show()
     
 if __name__ == '__main__':
