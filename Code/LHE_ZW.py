@@ -99,27 +99,37 @@ def main():
     ax[1].set_title("Distribuzione momento W")
     ax[1].legend()
 
-    plt.savefig("Confronto momento trasverso.png", dpi=300)
+    #plt.savefig("Confronto momento trasverso.png", dpi=300)
     plt.show()
     
-    '''
-    ax[0].hist(pt_Z_L, bins=n_binsZ, color = 'blue', density = True,  alpha = 0.5)
-    ax[0].hist(pt_Z_T, bins=n_binsZ, color = 'red', edgecolor = 'red', histtype='stepfilled', density = True, hatch='/', alpha = 0.3)
-    ax[0].set_xlabel("Momento trasverso (Gev)")
-    ax[0].set_ylabel("Conteggi")
-    ax[0].set_title("Distribuzione momento Z (LT)")
+    #confronto polarizzazioni W
+    height_L, b = np.histogram(pt_W_L, n_binsZ)         #altezza delle colonne della distribuzione longitudinale
+    height_T, b_t = np.histogram(pt_W_T, n_binsZ)       #altezza delle colonne della distribuzione trasversale
+    #print(len(height_L), len(height_T))
     
-    ax[1].hist(pt_W_L, bins=n_binsW, color = 'blue', density = True, alpha = 0.5)
-    ax[1].hist(pt_W_T, bins=n_binsW, color = 'red', edgecolor = 'red', histtype='stepfilled', hatch='/', density = True, alpha = 0.3)
-    ax[1].set_xlabel("Momento trasverso (Gev)")
-    ax[1].set_ylabel("Conteggi")
-    ax[1].set_title("Distribuzione momento W (LT)")
+    height_tot = np.array([x+y for x, y in zip(height_L, height_T)])
+    #print((height_tot))
     
-    #plt.savefig("Pt polarizzazione longitudinale.png", dpi = 300)
+    l_fraction = np.divide(height_L, height_tot, out=np.zeros_like(height_tot, dtype=float), where=height_tot > 0)  #y1
+    t_fraction = np.divide(height_T, height_tot, out=np.zeros_like(height_tot, dtype=float), where=height_tot > 0)  #y2
+    #print(len(l_fraction), len(t_fraction))
+    
+    bin_center = [0.5 * (b[i] + b[i+1]) for i in range(len(b) - 1)]
+    
+    sns.set(style='whitegrid')
+    plt.figure(figsize=(8,5))
+    
+    sns.scatterplot(x=bin_center, y=l_fraction, label='Longitudinale', color='royalblue')
+    sns.scatterplot(x=bin_center, y=t_fraction, label='Trasversale', color='firebrick')
+    
+    plt.title('Confronto frazioni longitudinali e trasversali')
+    plt.xlabel('Centro del bin')
+    plt.ylabel('Frazione')
+    plt.legend()
+    plt.tight_layout()
+    #plt.savefig("Confronto polarizzazioni.png", dpi=300)
     plt.show()
-
-    '''
-  
+    
 if __name__ == '__main__':
     main()  
                     
