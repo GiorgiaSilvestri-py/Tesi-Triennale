@@ -132,30 +132,25 @@ def main():
     
     
     sb.set(style='whitegrid')
-    plt.figure(figsize=(8,5))
+    fig, axes = plt.subplots(1, 2, figsize=(16, 5))
+    plt.subplots_adjust(wspace=0.5)
+
+    #polarizzazione W
+    sb.scatterplot(x=bin_center_W, y=l_fraction, label='Longitudinale', color='royalblue', ax=axes[0])
+    sb.scatterplot(x=bin_center_W, y=t_fraction, label='Trasversale', color='firebrick', ax=axes[0])
+    axes[0].set_title('Eventi di polarizzazione (W)')
+    axes[0].set_xlabel('Momento trasverso (Gev)')
+    axes[0].set_ylabel('dN/N')
+    axes[0].legend()
+
+    #polarizzazione Z
+    sb.scatterplot(x=bin_center_Z, y=l_fraction_Z, label='Longitudinale', color='royalblue', ax=axes[1])
+    sb.scatterplot(x=bin_center_Z, y=t_fraction_Z, label='Trasversale', color='firebrick', ax=axes[1])
+    axes[1].set_title('Eventi di polarizzazione (Z)')
+    axes[1].set_xlabel('Momento trasverso (Gev)')
+    axes[1].set_ylabel('dN/N')
+    axes[1].legend()
     
-    sb.scatterplot(x=bin_center_W, y=l_fraction, label='Longitudinale', color='royalblue')
-    sb.scatterplot(x=bin_center_W, y=t_fraction, label='Trasversale', color='firebrick')
-    
-    plt.title('Eventi di polarizzazione (W)')
-    plt.xlabel('Momento trasverso (Gev)')
-    plt.ylabel('dN/N')
-    plt.legend()
-    plt.tight_layout()
-    #plt.savefig("Confronto polarizzazioni.png", dpi=300)
-    plt.show()
-    
-    
-    sb.set(style='whitegrid')
-    plt.figure(figsize=(8,5))
-    
-    sb.scatterplot(x=bin_center_Z, y=l_fraction_Z, label='Longitudinale', color='royalblue')
-    sb.scatterplot(x=bin_center_Z, y=t_fraction_Z, label='Trasversale', color='firebrick')
-    
-    plt.title('Eventi di polarizzazione (Z)')
-    plt.xlabel('Momento trasverso (Gev)')
-    plt.ylabel('dN/N')
-    plt.legend()
     plt.tight_layout()
     plt.show()
     
