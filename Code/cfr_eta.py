@@ -17,14 +17,13 @@ def main():
     #analisi polarizzazione longitudinale
     LHE_L = "unweighted_events_L.lhe"
     events_L = read_file(LHE_L)
-    #print(len(events_L))
     
     events_Z_L = [e for e in events_L if contains_particle (e, 23)]
     events_W_L = [e for e in events_L if contains_particle (e, 24) or contains_particle (e, -24)]
     #print(len(events_Z_L), len(events_W_L))
     
-    eta_Z_L = []
-    eta_W_L = []    
+    eta_Z_L, phi_Z_L = [], []
+    eta_W_L, phi_W_L = [], []
     
     for event in events_Z_L :
         vector_Z_L = vector.obj(px = 0, py = 0, pz = 0, E = 0)
@@ -32,6 +31,7 @@ def main():
             vecZ_L = vector.obj(px = i["px"], py = i["py"], pz = i["pz"], E = i["E"])
             if i["pid"] == 23 :
                 eta_Z_L.append(vecZ_L.eta)
+                phi_Z_L.append(vecZ_L.phi)
                 
     for event in events_W_L :
         vector_W_L = vector.obj(px = 0, py = 0, pz = 0, E = 0)
@@ -39,6 +39,7 @@ def main():
             vecW_L = vector.obj(px = i["px"], py = i["py"], pz = i["pz"], E = i["E"])
             if abs(i["pid"]) == 24 :
                 eta_W_L.append(vecW_L.eta)
+                phi_W_L.append(vecW_L.phi)
       
     #analisi polarizzazione trasversale
     LHE_T = "unweighted_events_T.lhe"
@@ -49,8 +50,8 @@ def main():
     events_W_T = [e for e in events_T if contains_particle (e, 24) or contains_particle (e, -24)]
     #print(len(events_Z_T), len(events_W_T))
     
-    eta_Z_T = []
-    eta_W_T = []    
+    eta_Z_T, phi_Z_T = [], []
+    eta_W_T, phi_W_T = [], []    
     
     for event in events_Z_T :
         vector_Z_T = vector.obj(px = 0, py = 0, pz = 0, E = 0)
@@ -58,19 +59,21 @@ def main():
             vecZ_T = vector.obj(px = i["px"], py = i["py"], pz = i["pz"], E = i["E"])
             if i["pid"] == 23 :
                 eta_Z_T.append(vecZ_T.eta)
+                phi_Z_T.append(vecZ_T.phi)
                 
     for event in events_W_T :
         vector_W_T = vector.obj(px = 0, py = 0, pz = 0, E = 0)
         for i in event :
             vecW_T = vector.obj(px = i["px"], py = i["py"], pz = i["pz"], E = i["E"])
             if abs(i["pid"]) == 24 :
-                eta_W_T.append(vecW_T.eta)  
+                eta_W_T.append(vecW_T.eta)
+                phi_W_T.append(vecW_T.phi)
     
     #numero totale di eventi per Z
     N_events = len(events_Z_T) + len(events_Z_L)
     #print(N_events) 
     
-    #rappresentazione distribuzioni
+    #rappresentazione distribuzioni eta
     data = eta_Z_L
     iqr = np.percentile(data, 75) - np.percentile(data, 25)
     bin_width = 2 * iqr / (len(data) ** (1/3))
@@ -102,6 +105,42 @@ def main():
 
     #plt.savefig("Confronto pseudorapidità.png", dpi=300)
     plt.show()
+    
+    
+    
+    #rappresentazione distribuzioni phi
+    data = phi_Z_L
+    iqr = np.percentile(data, 75) - np.percentile(data, 25)
+    bin_width = 2 * iqr / (len(data) ** (1/3))
+    n_binsZ = int((max(data) - min(data)) / bin_width)
+      
+    data = phi_W_L
+    iqr = np.percentile(data, 75) - np.percentile(data, 25)
+    bin_width = 2 * iqr / (len(data) ** (1/3))
+    n_binsW = int((max(data) - min(data)) / bin_width)
+    
+    sb.set(style="whitegrid")
+    fig, ax = plt.subplots(1, 2, figsize=(19, 5))
+    plt.subplots_adjust(wspace=0.5)
+       
+    sb.histplot(phi_Z_L, bins=n_binsZ, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[0],  label='Polarizzazione longitudinale',  alpha = 0.8)
+    sb.histplot(phi_Z_T, bins=n_binsZ, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5, alpha = 0.4, ax=ax[0], label='Polarizzazione trasversa')
+    ax[0].set_xlabel("Pseudorapidità (rad)")
+    ax[0].set_ylabel("dN/N")
+    ax[0].set_title("Distribuzione angolo azimutale Z")
+    ax[0].legend()
+    
+    sb.histplot(phi_W_L, bins=n_binsW, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[1], label='Polarizzazione longitudinale',  alpha = 0.8)
+    sb.histplot(phi_W_T, bins=n_binsW, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5,  alpha = 0.4,
+             ax=ax[1], label='Polarizzazione trasversa')
+    ax[1].set_xlabel("Pseudorapidità (rad)")
+    ax[1].set_ylabel("dN/N")
+    ax[1].set_title("Distribuzione angolo azimutale W")
+    ax[1].legend()
+
+    #plt.savefig("Confronto phi.png", dpi=300)
+    plt.show()
+    
     
     
     
