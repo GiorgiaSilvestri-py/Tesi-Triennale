@@ -3,6 +3,7 @@ import math
 import numpy as np
 import vector
 import seaborn as sb
+from scipy.stats import wasserstein_distance, ks_2samp
 from utils import read_file
 import sys
 
@@ -153,6 +154,40 @@ def main():
     
     plt.tight_layout()
     plt.show()
+    
+    
+    #wasserstein distance
+    distance_z = wasserstein_distance(pt_Z_L, pt_Z_T)
+    k_s_z = ks_2samp(pt_Z_L, pt_Z_T)
+
+    #bin con massima distanza
+    height_l, bin_l = np.histogram(pt_Z_L, bins=40, density=True)
+    height_t, bin_t = np.histogram(pt_Z_T, bins=40, density=True)
+    bin_center_Z = [0.5 * (bin_l[i] + bin_l[i+1]) for i in range(len(bin_l) - 1)]
+    difference = [abs(x-y) for x,y in zip(height_l, height_t)]
+    index_max = np.argmax(difference)
+    pt_max = bin_center_Z[index_max]
+
+    print(f"EMD (Z): {distance_z:.2f} Gev")
+    print(f"Kolmogorov-Smirnov stat: {k_s_z.statistic:.3f}, p-value: {k_s_z.pvalue:.3f}")
+    print(f"Valore di pt per cui si ha massima differenza: {pt_max:0f}")
+    
+    
+    distance_w = wasserstein_distance(pt_W_L, pt_W_T)
+    k_s_w = ks_2samp(pt_W_L, pt_W_T)
+    
+    #bin con massima distanza w
+    height_l, bin_l = np.histogram(pt_W_L, bins=40, density=True)
+    height_t, bin_t = np.histogram(pt_W_T, bins=40, density=True)
+    bin_center_W = [0.5 * (bin_l[i] + bin_l[i+1]) for i in range(len(bin_l) - 1)]
+    difference = [abs(x-y) for x,y in zip(height_l, height_t)]
+    index_max = np.argmax(difference)
+    pt_max = bin_center_W[index_max]
+    
+    print(f"EMD (W): {distance_w:.2f} Gev")
+    print(f"Kolmogorov-Smirnov stat: {k_s_w.statistic:.3f}, p-value: {k_s_w.pvalue:.3f}")
+    print(f"Valore di pt per cui si ha massima differenza: {pt_max:0f}")
+    
     
 if __name__ == '__main__':
     main()  
