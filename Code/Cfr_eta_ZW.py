@@ -13,6 +13,9 @@ def contains_particle (particle_list, particle_ID) :
             return True
             
 def main():
+    '''
+    confronto tramite pseudorapidità di Z e W e (solo grafico) tramite angolo phi
+    '''
     
     #analisi polarizzazione longitudinale
     LHE_L = "unweighted_events_L.lhe"

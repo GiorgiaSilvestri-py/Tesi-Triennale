@@ -15,6 +15,9 @@ def contains_particle (particle_list, particle_ID) :
             return True
     
 def main():
+    '''
+    Legge file LHE e restituisce grafici di pt, eta, phi per e, mu e tau e massa invariante
+    '''
     
     file_lhe = "unweighted_events_50000.lhe"
     events = read_file(file_lhe)
@@ -48,25 +51,25 @@ def main():
             
     fig, ax = plt.subplots(2, 2, figsize = (16, 5))
     
-    sb.histplot(pt_lep, bins = nBins, color = 'firebrick', edgecolor = 'firebrick', element='step', stat = 'density', ax = ax[0,0], linewidth=1.5, alpha = 0.4, label = 'Polarizzazione trasversale')
+    sb.histplot(pt_lep, bins = nBins, color = 'firebrick', edgecolor = 'firebrick', element='step', stat = 'density', ax = ax[0,0], linewidth=1.5, alpha = 0.4, label = 'Polarizzazione longitudinale')
     ax[0, 0].set_xlabel("P_t (GeV)")
     ax[0, 0].set_ylabel("dN/N")
     ax[0, 0].set_title("Distribuzione momento trasverso leptone")
     ax[0, 0].legend()
 
-    sb.histplot(eta_lep, bins = nBins, color = 'firebrick', edgecolor = 'firebrick', element='step',stat = 'density', ax = ax[0,1], linewidth=1.5, alpha = 0.4, label = 'Polarizzazione trasversale')
+    sb.histplot(eta_lep, bins = nBins, color = 'firebrick', edgecolor = 'firebrick', element='step',stat = 'density', ax = ax[0,1], linewidth=1.5, alpha = 0.4, label = 'Polarizzazione longitudinale')
     ax[0, 1].set_xlabel("η (rad)")
     ax[0, 1].set_ylabel("dN/N")
     ax[0, 1].set_title("Distribuzione pseudorapidità leptone")
     ax[0, 1].legend()
     
-    sb.histplot(phi_lep, bins = nBins, color = 'firebrick', edgecolor = 'firebrick', element='step',stat = 'density', ax = ax[1,0], linewidth=1.5, alpha = 0.4, label = 'Polarizzazione trasversale')
+    sb.histplot(phi_lep, bins = nBins, color = 'firebrick', edgecolor = 'firebrick', element='step',stat = 'density', ax = ax[1,0], linewidth=1.5, alpha = 0.4, label = 'Polarizzazione longitudinale')
     ax[1, 0].set_xlabel("φ (rad)")
     ax[1, 0].set_ylabel("dN/N")
     ax[1, 0].set_title("Distribuzione angolo azimutale leptone")
     ax[1, 0].legend()
     
-    sb.histplot(M_z, bins = nBins, color = 'firebrick', edgecolor = 'firebrick', element='step',stat = 'density', ax = ax[1,1], linewidth=1.5, alpha = 0.4, label = 'Polarizzazione trasversale')
+    sb.histplot(M_z, bins = nBins, color = 'firebrick', edgecolor = 'firebrick', element='step',stat = 'density', ax = ax[1,1], linewidth=1.5, alpha = 0.4, label = 'Polarizzazione longitudinale')
     ax[1, 1].set_xlabel("M (Gev)")
     ax[1, 1].set_ylabel("dN/N")
     ax[1, 1].set_title("Massa invariante")
