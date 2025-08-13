@@ -84,4 +84,35 @@ def build_fm_ZW (events_list) :
         qvectorW_list.append(fm_vec)
         
     return qvectorZ_list, qvectorW_list
-    
+
+#------------------------------------------------------------------------------------------------------------------------------
+
+def boost_to_rf(quad_vec_1, quad_vec_2) :
+        '''
+        restituisce le liste dei quadrimomenti nel sistema di riferimento del cm:
+        quad_vec_1 : lista di quadrimomenti della prima particella
+        quad_vec_2 : lista di quadrimomenti della seconda particella
+        '''
+        list_fm_12_rf = []
+        
+        for (fm_1, fm_2) in zip(quad_vec_1, quad_vec_2) :
+            fm_12 = fm_1 + fm_2
+            
+            bx = fm_12.px / fm_12.E
+            by = fm_12.py / fm_12.E
+            bz = fm_12.pz / fm_12.E
+            boost_vec = vector.obj(x=-bx, y=-by, z=-bz)
+        
+            fm_1_rf = fm_1.boost(boost_vec)
+            fm_2_rf = fm_2.boost(boost_vec)
+            fm_12_rf = fm_1_rf + fm_2_rf
+
+            list_fm_12_rf.append(fm_12_rf)
+                    
+            #controllo: momento nullo
+            if abs(fm_12_rf.px) > 1e-9 or abs(fm_12_rf.py) > 1e-9 or abs(fm_12_rf.pz) > 1e-9 :
+                print("Trimomento non nullo.")
+        
+        return list_fm_12_rf
+        
+#------------------------------------------------------------------------------------------------------------------------------

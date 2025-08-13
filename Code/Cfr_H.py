@@ -9,6 +9,9 @@ import sys
 
             
 def main():
+    '''
+    Confronto tramite pt_h, eta_h, e massa invariante VH
+    '''
     
     #analisi polarizzazione longitudinale
     LHE_L = "unweighted_events_L.lhe"
@@ -58,7 +61,7 @@ def main():
     plt.subplots_adjust(wspace=0.5)
        
     sb.histplot(pt_H_L, bins=nBins, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[0],  label='Polarizzazione longitudinale',  alpha = 0.8)
-    sb.histplot(pt_H_T, bins=nBins, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5, alpha = 0.4, ax=ax[0], label='Polarizzazione trasversa')
+    sb.histplot(pt_H_T, bins=nBins, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5, alpha = 0.4, ax=ax[0], label='Polarizzazione trasversale')
     ax[0].set_xlabel("Pt (GeV)")
     ax[0].set_ylabel("dN/N")
     ax[0].set_title("Distribuzione momento trasverso (H)")
@@ -66,13 +69,13 @@ def main():
     
     sb.histplot(eta_H_L, bins=n_bins, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[1], label='Polarizzazione longitudinale',  alpha = 0.8)
     sb.histplot(eta_H_T, bins=n_bins, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5,  alpha = 0.4,
-             ax=ax[1], label='Polarizzazione trasversa')
+             ax=ax[1], label='Polarizzazione trasversale')
     ax[1].set_xlabel("η (rad)")
     ax[1].set_ylabel("dN/N")
     ax[1].set_title("Distribuzione pseudorapidità (H)")
     ax[1].legend()
 
-    plt.savefig("Confronto Higgs.png", dpi=300)
+    #plt.savefig("Confronto Higgs.png", dpi=300)
     plt.show()
     
     
@@ -111,7 +114,6 @@ def main():
     
     
     #confronto massa invariante
-    
     H_fm_L, H_fm_T = [], []
     Z_fm_L, Z_fm_T = [], []
     W_fm_L, W_fm_T = [], []    
@@ -121,7 +123,7 @@ def main():
     events_L = read_file(LHE_L)
     
     quadrivector_ZL, quadrivector_WL = build_fm_ZW(events_L)
-    quadrivector_HL = []                                            #lista di quadrimomenti per l'higgs
+    quadrivector_HL = []                                                                #lista di quadrimomenti per l'higgs
     
     for event in events_L :
         for p in event :
@@ -140,12 +142,12 @@ def main():
     M_WH_l = [wh.M for wh in fm_WH_L if wh.M > 0]                                        #lista con massa invariante di WH
     
    
-    #trasversa
+    #trasversale
     LHE_T = "unweighted_events_T.lhe"
     events_T = read_file(LHE_T)
 
     quadrivector_ZT, quadrivector_WT = build_fm_ZW(events_T)
-    quadrivector_HT = []                                            #lista di quadrimomenti per l'higgs
+    quadrivector_HT = []                                                                #lista di quadrimomenti per l'higgs
 
     for event in events_T :
         for p in event :
@@ -160,8 +162,8 @@ def main():
     fm_ZH_T = [x+y for x, y in zip(quadrivector_ZT, quadrivector_HT)]
     fm_WH_T = [x+y for x, y in zip(quadrivector_WT, quadrivector_HT)]
 
-    M_ZH_t = [zh.M for zh in fm_ZH_T]                                        #lista con massa invariante di ZH
-    M_WH_t = [wh.M for wh in fm_WH_T]                                        #lista con massa invariante di WH
+    M_ZH_t = [zh.M for zh in fm_ZH_T]                                                   #lista con massa invariante di ZH
+    M_WH_t = [wh.M for wh in fm_WH_T]                                                   #lista con massa invariante di WH
     
     
     #rappresentazione sul grafico
@@ -181,7 +183,7 @@ def main():
     plt.subplots_adjust(wspace=0.5)
        
     sb.histplot(M_ZH_l, bins=nBins, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[0],  label='Polarizzazione longitudinale',  alpha = 0.8)
-    sb.histplot(M_ZH_t, bins=nBins, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5, alpha = 0.4, ax=ax[0], label='Polarizzazione trasversa')
+    sb.histplot(M_ZH_t, bins=nBins, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5, alpha = 0.4, ax=ax[0], label='Polarizzazione trasversale')
     ax[0].set_xlabel("M (GeV)")
     ax[0].set_ylabel("dN/N")
     ax[0].set_title("Distribuzione massa invariante ZH")
@@ -189,7 +191,7 @@ def main():
     
     sb.histplot(M_WH_l, bins=n_Bins, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[1], label='Polarizzazione longitudinale',  alpha = 0.8)
     sb.histplot(M_WH_t, bins=n_Bins, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5,  alpha = 0.4,
-             ax=ax[1], label='Polarizzazione trasversa')
+             ax=ax[1], label='Polarizzazione trasversale')
     ax[1].set_xlabel("M (GeV)")
     ax[1].set_ylabel("dN/N")
     ax[1].set_title("Distribuzione massa invariante WH")

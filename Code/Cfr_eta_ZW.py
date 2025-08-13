@@ -92,7 +92,7 @@ def main():
     plt.subplots_adjust(wspace=0.5)
        
     sb.histplot(eta_Z_L, bins=n_binsZ, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[0],  label='Polarizzazione longitudinale',  alpha = 0.8)
-    sb.histplot(eta_Z_T, bins=n_binsZ, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5, alpha = 0.4, ax=ax[0], label='Polarizzazione trasversa')
+    sb.histplot(eta_Z_T, bins=n_binsZ, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5, alpha = 0.4, ax=ax[0], label='Polarizzazione trasversale')
     ax[0].set_xlabel("Pseudorapidità (rad)")
     ax[0].set_ylabel("dN/N")
     ax[0].set_title("Distribuzione pseudorapidità Z")
@@ -100,7 +100,7 @@ def main():
     
     sb.histplot(eta_W_L, bins=n_binsW, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[1], label='Polarizzazione longitudinale',  alpha = 0.8)
     sb.histplot(eta_W_T, bins=n_binsW, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5,  alpha = 0.4,
-             ax=ax[1], label='Polarizzazione trasversa')
+             ax=ax[1], label='Polarizzazione trasversale')
     ax[1].set_xlabel("Pseudorapidità (rad)")
     ax[1].set_ylabel("dN/N")
     ax[1].set_title("Distribuzione pseudorapidità W")
@@ -127,7 +127,7 @@ def main():
     plt.subplots_adjust(wspace=0.5)
        
     sb.histplot(phi_Z_L, bins=n_binsZ, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[0],  label='Polarizzazione longitudinale',  alpha = 0.8)
-    sb.histplot(phi_Z_T, bins=n_binsZ, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5, alpha = 0.4, ax=ax[0], label='Polarizzazione trasversa')
+    sb.histplot(phi_Z_T, bins=n_binsZ, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5, alpha = 0.4, ax=ax[0], label='Polarizzazione trasversale')
     ax[0].set_xlabel("Pseudorapidità (rad)")
     ax[0].set_ylabel("dN/N")
     ax[0].set_title("Distribuzione angolo azimutale Z")
@@ -135,7 +135,7 @@ def main():
     
     sb.histplot(phi_W_L, bins=n_binsW, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[1], label='Polarizzazione longitudinale',  alpha = 0.8)
     sb.histplot(phi_W_T, bins=n_binsW, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5,  alpha = 0.4,
-             ax=ax[1], label='Polarizzazione trasversa')
+             ax=ax[1], label='Polarizzazione trasversale')
     ax[1].set_xlabel("Pseudorapidità (rad)")
     ax[1].set_ylabel("dN/N")
     ax[1].set_title("Distribuzione angolo azimutale W")
