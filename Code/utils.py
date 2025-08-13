@@ -1,7 +1,7 @@
+import vector
+
 def read_file(nome_file):
-    '''
-    legge il file
-    '''
+
     with open(nome_file, 'r') as f:
             in_event = False
             event_lines = []
@@ -45,4 +45,43 @@ def read_file(nome_file):
                         event_lines.append(line)
                
     return events
+ 
+#--------------------------------------------------------------------------------------------------------------------------------
+
+def contains_particle (particle_list, particle_ID) :
+    for p in particle_list :
+        if (p["pid"]) == particle_ID :
+            return True
+            
+#--------------------------------------------------------------------------------------------------------------------------------
+            
+def build_fm_ZW (events_list) :
+    '''
+    restituisce liste di (vector.obj) quadrivettori della particella (W/Z) sommando quelli dei suoi prodotti di decadimento
+    '''
+    qvectorZ_list, qvectorW_list = [], []
+    
+    events_Z = [e for e in events_list if contains_particle (e, 23)]
+    events_W = [e for e in events_list if contains_particle (e, 24) or contains_particle (e, -24)]
+    
+    for event in events_Z:
+        fm_vec = vector.obj(px = 0, py = 0, pz = 0, E = 0)
+        
+        for p in event :
+            if p["status"] == 1 and abs(p["pid"]) in [11, 12, 14, 16, 13, 15] :
+                fm_vec += vector.obj(px = p["px"], py = p["py"], pz = p["pz"], E = p["E"])     #quadrivettore somma
+        
+        qvectorZ_list.append(fm_vec)
+        
+    
+    for event in events_W:
+        fm_vec = vector.obj(px = 0, py = 0, pz = 0, E = 0)
+        
+        for p in event :
+            if p["status"] == 1 and abs(p["pid"]) in [11, 13, 15] :
+                fm_vec += vector.obj(px = p["px"], py = p["py"], pz = p["pz"], E = p["E"])      #quadrivettore somma
+        
+        qvectorW_list.append(fm_vec)
+        
+    return qvectorZ_list, qvectorW_list
     

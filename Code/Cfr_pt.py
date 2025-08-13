@@ -17,11 +17,11 @@ def main():
     #analisi polarizzazione longitudinale
     LHE_L = "unweighted_events_L.lhe"
     events_L = read_file(LHE_L)
-    print(len(events_L))
+    #print(len(events_L))
     
     events_Z_L = [e for e in events_L if contains_particle (e, 23)]
     events_W_L = [e for e in events_L if contains_particle (e, 24) or contains_particle (e, -24)]
-    print(len(events_Z_L), len(events_W_L))
+    #print(len(events_Z_L), len(events_W_L))
     
     pt_Z_L = []
     pt_W_L = []    
