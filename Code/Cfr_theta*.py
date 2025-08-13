@@ -68,13 +68,15 @@ def main () :
     theta_star_ZT = theta_star(quadrivector_ZT, quadrivector_HT)
     theta_star_WL = theta_star(quadrivector_WL, quadrivector_HL)
     theta_star_WT = theta_star(quadrivector_WT, quadrivector_HT)
+    
+    #theta_star_ZL = compute_theta_star(quadrivector_ZL, quadrivector_HL)
+    #theta_star_ZT = compute_theta_star(quadrivector_ZT, quadrivector_HT)
 
     #visualizzazione distribuzioni
     data = theta_star_ZL
     iqr = np.percentile(data, 75) - np.percentile(data, 25)
     bin_width = 2 * iqr / (len(data) ** (1/3))
     nBins = int((max(data) - min(data)) / bin_width)
-    print(nBins)
     
     data = theta_star_WL
     iqr = np.percentile(data, 75) - np.percentile(data, 25)
@@ -85,16 +87,17 @@ def main () :
     sb.set(style="whitegrid")
     fig, ax = plt.subplots(1, 2, figsize=(16, 5))
     plt.subplots_adjust(wspace=0.5)
+    print(theta_star_ZL)
        
-    sb.histplot(theta_star_ZL, bins=50, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[0],  label='Polarizzazione longitudinale',  alpha = 0.8)
-    sb.histplot(theta_star_ZT, bins=50, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5, alpha = 0.4, ax=ax[0], label='Polarizzazione trasversale')
+    sb.histplot(theta_star_ZL, bins=nBins, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[0],  label='Polarizzazione longitudinale',  alpha = 0.8)
+    sb.histplot(theta_star_ZT, bins=nBins, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5, alpha = 0.4, ax=ax[0], label='Polarizzazione trasversale')
     ax[0].set_xlabel("cosθ*")
     ax[0].set_ylabel("dN/N")
     ax[0].set_title("Distribuzione angolo θ* (Z)")
     ax[0].legend()
     
-    sb.histplot(theta_star_WL, bins=50, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[1], label='Polarizzazione longitudinale',  alpha = 0.8)
-    sb.histplot(theta_star_WT, bins=50, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5,  alpha = 0.4,
+    sb.histplot(theta_star_WL, bins=30, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[1], label='Polarizzazione longitudinale',  alpha = 0.8)
+    sb.histplot(theta_star_WT, bins=30, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5,  alpha = 0.4,
              ax=ax[1], label='Polarizzazione trasversale')
     ax[1].set_xlabel("cosθ*")
     ax[1].set_ylabel("dN/N")
