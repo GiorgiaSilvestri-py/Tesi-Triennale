@@ -4,7 +4,7 @@ import numpy as np
 import vector
 import seaborn as sb
 from scipy.stats import wasserstein_distance, ks_2samp
-from utils import read_file, contains_particle, build_fm_ZW, boost_to_rf
+from utils import read_file, contains_particle, build_fm_ZW, boost_to_rf, theta_star
 
 def main () :
     '''
@@ -62,7 +62,13 @@ def main () :
     fm_ZH_T_rf = boost_to_rf(quadrivector_ZT, quadrivector_HT)
     fm_WH_T_rf = boost_to_rf(quadrivector_WT, quadrivector_HT)
     
-
     
+    #calcolo l'angolo
+    theta_star_ZL = theta_star(quadrivector_ZL, quadrivector_HL)
+    theta_star_ZT = theta_star(quadrivector_ZT, quadrivector_HT)
+    theta_star_WL = theta_star(quadrivector_WL, quadrivector_HL)
+    theta_star_WT = theta_star(quadrivector_WT, quadrivector_HT)
+    
+  
 if __name__ == '__main__' :
     main() 

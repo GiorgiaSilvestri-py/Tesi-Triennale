@@ -108,11 +108,50 @@ def boost_to_rf(quad_vec_1, quad_vec_2) :
             fm_12_rf = fm_1_rf + fm_2_rf
 
             list_fm_12_rf.append(fm_12_rf)
+            
+            #calcolo theta star
+            z_axis = vector.obj(x = 0, y = 0, z = 1)
+            theta_star = fm_1_rf.angle(z_axis)
+            theta_star_list.append(theta_star)
                     
             #controllo: momento nullo
             if abs(fm_12_rf.px) > 1e-9 or abs(fm_12_rf.py) > 1e-9 or abs(fm_12_rf.pz) > 1e-9 :
                 print("Trimomento non nullo.")
         
-        return list_fm_12_rf
+        return list_fm_12_rf, theta_star_list
+        
+        for fm_
         
 #------------------------------------------------------------------------------------------------------------------------------
+
+def theta_star(quad_vec_1, quad_vec_2) :
+    '''
+    Calcola l'angolo theta star per 1 con
+    quad_vec_1 : lista di quadrimomenti della prima particella
+    quad_vec_2 : lista di quadrimomenti della seconda particella
+    '''
+    
+    list_fm_12_rf, theta_star_list = [], []
+        
+    for (fm_1, fm_2) in zip(quad_vec_1, quad_vec_2) :
+        fm_12 = fm_1 + fm_2
+        
+        bx = fm_12.px / fm_12.E
+        by = fm_12.py / fm_12.E
+        bz = fm_12.pz / fm_12.E
+        boost_vec = vector.obj(x=-bx, y=-by, z=-bz)
+    
+        fm_1_rf = fm_1.boost(boost_vec)
+        fm_2_rf = fm_2.boost(boost_vec) 
+        list_fm_12_rf.append(fm_1_rf + fm_2_rf)
+
+        #calcolo theta star
+        z_axis = vector.obj(x = 0, y = 0, z = 1)
+        theta_star = fm_1_rf.angle(z_axis)
+        theta_star_list.append(theta_star)
+                
+        #controllo: momento nullo
+        if abs(fm_12_rf.px) > 1e-9 or abs(fm_12_rf.py) > 1e-9 or abs(fm_12_rf.pz) > 1e-9 :
+            print("Trimomento non nullo.")
+    
+    return theta_star_list
