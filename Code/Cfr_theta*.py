@@ -30,11 +30,11 @@ def main () :
                 
                 quadrivector_HL.append(h_vec)
                 break
-    
+    '''
     #somma dei due
     fm_ZH_L = [x+y for x, y in zip(quadrivector_ZL, quadrivector_HL)]                       #quadrimomento ZH
     fm_WH_L = [x+y for x, y in zip(quadrivector_WL, quadrivector_HL)]                       #quadrimomento WH
-    
+    '''
     
     #trasversale
     LHE_T = "unweighted_events_T.lhe"
@@ -50,24 +50,59 @@ def main () :
                 
                 quadrivector_HT.append(h_vec)
                 break
-
+    '''
     #somma dei due
     fm_ZH_T = [x+y for x, y in zip(quadrivector_ZT, quadrivector_HT)]                       #quadrimomento ZH
     fm_WH_T = [x+y for x, y in zip(quadrivector_WT, quadrivector_HT)]                       #quadrimomento WH
     
-        
+    
     #applico boost di lorentz
     fm_ZH_L_rf = boost_to_rf(quadrivector_ZL, quadrivector_HL)
     fm_WH_L_rf = boost_to_rf(quadrivector_WL, quadrivector_HL)
     fm_ZH_T_rf = boost_to_rf(quadrivector_ZT, quadrivector_HT)
     fm_WH_T_rf = boost_to_rf(quadrivector_WT, quadrivector_HT)
-    
+    '''
     
     #calcolo l'angolo
     theta_star_ZL = theta_star(quadrivector_ZL, quadrivector_HL)
     theta_star_ZT = theta_star(quadrivector_ZT, quadrivector_HT)
     theta_star_WL = theta_star(quadrivector_WL, quadrivector_HL)
     theta_star_WT = theta_star(quadrivector_WT, quadrivector_HT)
+
+    #visualizzazione distribuzioni
+    data = theta_star_ZL
+    iqr = np.percentile(data, 75) - np.percentile(data, 25)
+    bin_width = 2 * iqr / (len(data) ** (1/3))
+    nBins = int((max(data) - min(data)) / bin_width)
+    print(nBins)
+    
+    data = theta_star_WL
+    iqr = np.percentile(data, 75) - np.percentile(data, 25)
+    bin_width = 2 * iqr / (len(data) ** (1/3))
+    n_bins = int((max(data) - min(data)) / bin_width)
+    
+     
+    sb.set(style="whitegrid")
+    fig, ax = plt.subplots(1, 2, figsize=(16, 5))
+    plt.subplots_adjust(wspace=0.5)
+       
+    sb.histplot(theta_star_ZL, bins=50, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[0],  label='Polarizzazione longitudinale',  alpha = 0.8)
+    sb.histplot(theta_star_ZT, bins=50, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5, alpha = 0.4, ax=ax[0], label='Polarizzazione trasversale')
+    ax[0].set_xlabel("cosθ*")
+    ax[0].set_ylabel("dN/N")
+    ax[0].set_title("Distribuzione angolo θ* (Z)")
+    ax[0].legend()
+    
+    sb.histplot(theta_star_WL, bins=50, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[1], label='Polarizzazione longitudinale',  alpha = 0.8)
+    sb.histplot(theta_star_WT, bins=50, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5,  alpha = 0.4,
+             ax=ax[1], label='Polarizzazione trasversale')
+    ax[1].set_xlabel("cosθ*")
+    ax[1].set_ylabel("dN/N")
+    ax[1].set_title("Distribuzione angolo θ* (W)")
+    ax[1].legend()
+
+    plt.savefig("Confronto coseno.png", dpi=300)
+    plt.show()
     
   
 if __name__ == '__main__' :

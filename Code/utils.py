@@ -1,4 +1,5 @@
 import vector
+import numpy as np
 
 def read_file(nome_file):
 
@@ -109,19 +110,28 @@ def boost_to_rf(quad_vec_1, quad_vec_2) :
 
             list_fm_12_rf.append(fm_12_rf)
             
-            #calcolo theta star
-            z_axis = vector.obj(x = 0, y = 0, z = 1)
-            theta_star = fm_1_rf.angle(z_axis)
-            theta_star_list.append(theta_star)
-                    
+                               
             #controllo: momento nullo
             if abs(fm_12_rf.px) > 1e-9 or abs(fm_12_rf.py) > 1e-9 or abs(fm_12_rf.pz) > 1e-9 :
                 print("Trimomento non nullo.")
         
-        return list_fm_12_rf, theta_star_list
+        return list_fm_12_rf
         
-        for fm_
-        
+#------------------------------------------------------------------------------------------------------------------------------
+
+def compute_angle(v1, v2):
+    """
+    Calcola il coseno dell'angolo tra due vettori tridimensionali
+    """
+    p1 = np.array([v1.x, v1.y, v1.z])
+    p2 = np.array([v2.x, v2.y, v2.z])
+
+    cos_theta = np.dot(p1, p2) / (np.linalg.norm(p1) * np.linalg.norm(p2))
+    
+    if cos_theta > 1.0 or cos_theta < -1.0:
+        raise ValueError
+    return cos_theta
+
 #------------------------------------------------------------------------------------------------------------------------------
 
 def theta_star(quad_vec_1, quad_vec_2) :
@@ -142,13 +152,16 @@ def theta_star(quad_vec_1, quad_vec_2) :
         boost_vec = vector.obj(x=-bx, y=-by, z=-bz)
     
         fm_1_rf = fm_1.boost(boost_vec)
-        fm_2_rf = fm_2.boost(boost_vec) 
-        list_fm_12_rf.append(fm_1_rf + fm_2_rf)
+        fm_2_rf = fm_2.boost(boost_vec)
+        fm_12_rf = fm_1_rf + fm_2_rf
+        list_fm_12_rf.append(fm_12_rf)
 
         #calcolo theta star
-        z_axis = vector.obj(x = 0, y = 0, z = 1)
-        theta_star = fm_1_rf.angle(z_axis)
+        z_axis = vector.obj(x = 0, y = 0, z = 1)      
+        p_vec = vector.obj(x=fm_1_rf.px, y=fm_1_rf.py, z=fm_1_rf.pz)
+        theta_star = compute_angle(p_vec, z_axis)
         theta_star_list.append(theta_star)
+
                 
         #controllo: momento nullo
         if abs(fm_12_rf.px) > 1e-9 or abs(fm_12_rf.py) > 1e-9 or abs(fm_12_rf.pz) > 1e-9 :
