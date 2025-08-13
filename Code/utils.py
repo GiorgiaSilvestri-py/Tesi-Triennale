@@ -95,6 +95,7 @@ def boost_to_rf(quad_vec_1, quad_vec_2) :
         quad_vec_2 : lista di quadrimomenti della seconda particella
         '''
         list_fm_12_rf = []
+        list_1_rf, list_2_rf = [], []
         
         for (fm_1, fm_2) in zip(quad_vec_1, quad_vec_2) :
             fm_12 = fm_1 + fm_2
@@ -107,7 +108,9 @@ def boost_to_rf(quad_vec_1, quad_vec_2) :
             fm_1_rf = fm_1.boost(boost_vec)
             fm_2_rf = fm_2.boost(boost_vec)
             fm_12_rf = fm_1_rf + fm_2_rf
-
+            
+            list_1_rf.append(fm_1_rf)
+            list_2_rf.append(fm_2_rf)
             list_fm_12_rf.append(fm_12_rf)
             
                                
@@ -115,7 +118,7 @@ def boost_to_rf(quad_vec_1, quad_vec_2) :
             if abs(fm_12_rf.px) > 1e-9 or abs(fm_12_rf.py) > 1e-9 or abs(fm_12_rf.pz) > 1e-9 :
                 print("Trimomento non nullo.")
         
-        return list_fm_12_rf
+        return list_1_rf, list_2_rf
         
 #------------------------------------------------------------------------------------------------------------------------------
 
@@ -127,19 +130,18 @@ def compute_angle(v1, v2):
     p2 = np.array([v2.x, v2.y, v2.z])
 
     cos_theta = np.dot(p1, p2) / (np.linalg.norm(p1) * np.linalg.norm(p2))
-    
-    if cos_theta > 1.0 or cos_theta < -1.0:
-        raise ValueError
-    return cos_theta
+    return np.clip(cos_theta, -1.0, 1.0)
+
+
 
 #------------------------------------------------------------------------------------------------------------------------------
-
+'''
 def theta_star(quad_vec_1, quad_vec_2) :
-    '''
+
     Calcola l'angolo theta star per 1 con
     quad_vec_1 : lista di quadrimomenti della prima particella
     quad_vec_2 : lista di quadrimomenti della seconda particella
-    '''
+
     
     list_fm_12_rf, theta_star_list = [], []
         
@@ -168,3 +170,30 @@ def theta_star(quad_vec_1, quad_vec_2) :
             print("Trimomento non nullo.")
     
     return theta_star_list
+'''
+
+def theta_star(quad_V, quad_H):
+    cos_list = []
+
+    for fm_v, fm_h in zip(quad_V, quad_H):
+        z_axis = vector.obj(x = 0, y = 0, z = 1)                                            #asse z nel laboratorio
+        
+        #quadrimomento totale VH
+        fm_VH = fm_v + fm_h
+        
+        #calcolo beta come p/E di VH
+        boost_vec = vector.obj(x = -fm_VH.px / fm_VH.E, y = -fm_VH.py / fm_VH.E, z= -fm_VH.pz / fm_VH.E) 
+        
+        #trovata beta applico -beta come boost
+        fm_v_rf = fm_v.boost(boost_vec)             #quadrimomento di V nel sdr VH
+        fm_h_rf = fm_h.boost(boost_vec)
+        
+        p_vec = vector.obj(x = fm_v_rf.px, y = fm_v_rf.py, z = fm_v_rf.pz)      #vettore momento della V nel SDR VH
+        
+        #angolo tra direzione di volo della V e la direzione del fascio
+        cos_theta = compute_angle(p_vec, z_axis)
+        cos_list.append(cos_theta)
+
+    return cos_list
+
+
