@@ -88,6 +88,47 @@ def build_fm_ZW (events_list) :
 
 #------------------------------------------------------------------------------------------------------------------------------
 
+def build_decay_lists (events_list) :
+    '''
+    restituisce liste di (vector.obj) quadrivettori della particella (W/Z) e liste di quadrivettori dei leptoni prodotti dal decadimento
+    '''
+    
+    qvectorZ_list, qvectorW_list = [], []
+    fm_lepZ_list, fm_lepW_list = [], []
+    
+    events_Z = [e for e in events_list if contains_particle (e, 23)]
+    events_W = [e for e in events_list if contains_particle (e, 24) or contains_particle (e, -24)]
+    
+    for event in events_Z:
+        fm_vec = vector.obj(px = 0, py = 0, pz = 0, E = 0)
+        fm_lep_Z = vector.obj(px = 0, py = 0, pz = 0, E = 0)
+        
+        for p in event :
+            if p["status"] == 1 and abs(p["pid"]) in [11, 12, 14, 16, 13, 15] :
+                fm_vec += vector.obj(px = p["px"], py = p["py"], pz = p["pz"], E = p["E"])     #quadrivettore somma
+            if p["status"] == 1 and p["pid"] in [11, 12, 14, 16, 13, 15] :
+                fm_lep_Z = vector.obj(px = p["px"], py = p["py"], pz = p["pz"], E = p["E"])     #quadrivettore leptone
+                            
+        qvectorZ_list.append(fm_vec)
+        fm_lepZ_list.append(fm_lep_Z)
+
+    for event in events_W:
+        fm_vec = vector.obj(px = 0, py = 0, pz = 0, E = 0)
+        
+        for p in event :
+            if p["status"] == 1 and abs(p["pid"]) in [11, 13, 15] :
+                fm_vec += vector.obj(px = p["px"], py = p["py"], pz = p["pz"], E = p["E"])      #quadrivettore somma
+            
+            if p["status"] == 1 and p["pid"] in [11, 12, 14, 16, 13, 15] :
+                fm_lep_W = vector.obj(px = p["px"], py = p["py"], pz = p["pz"], E = p["E"])     #quadrivettore leptone
+                
+        qvectorW_list.append(fm_vec)
+        fm_lepW_list.append(fm_lep_W)
+        
+    return qvectorZ_list, qvectorW_list, fm_lepZ_list, fm_lepW_list
+
+#------------------------------------------------------------------------------------------------------------------------------
+
 def boost_to_rf(quad_vec_1, quad_vec_2) :
         '''
         restituisce le liste dei quadrimomenti nel sistema di riferimento del cm:

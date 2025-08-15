@@ -9,12 +9,7 @@ from utils import read_file, contains_particle, build_fm_ZW, boost_to_rf, theta_
 def main () :
     '''
     Confronta le distribuzioni dell'angolo theta*, definito come la direzione di volo di Z (o W) calcolato nel sdr del centro di massa VH
-    '''
-    
-    #calcolo del quadrimomento VH
-    H_fm_L, H_fm_T = [], []
-    Z_fm_L, Z_fm_T = [], []
-    W_fm_L, W_fm_T = [], []    
+    ''' 
     
     #longitudinale
     LHE_L = "unweighted_events_L.lhe"
@@ -30,11 +25,7 @@ def main () :
                 
                 quadrivector_HL.append(h_vec)
                 break
-    '''
-    #somma dei due
-    fm_ZH_L = [x+y for x, y in zip(quadrivector_ZL, quadrivector_HL)]                       #quadrimomento ZH
-    fm_WH_L = [x+y for x, y in zip(quadrivector_WL, quadrivector_HL)]                       #quadrimomento WH
-    '''
+
     
     #trasversale
     LHE_T = "unweighted_events_T.lhe"
@@ -50,18 +41,7 @@ def main () :
                 
                 quadrivector_HT.append(h_vec)
                 break
-    '''
-    #somma dei due
-    fm_ZH_T = [x+y for x, y in zip(quadrivector_ZT, quadrivector_HT)]                       #quadrimomento ZH
-    fm_WH_T = [x+y for x, y in zip(quadrivector_WT, quadrivector_HT)]                       #quadrimomento WH
     
-    
-    #applico boost di lorentz
-    fm_ZH_L_rf = boost_to_rf(quadrivector_ZL, quadrivector_HL)
-    fm_WH_L_rf = boost_to_rf(quadrivector_WL, quadrivector_HL)
-    fm_ZH_T_rf = boost_to_rf(quadrivector_ZT, quadrivector_HT)
-    fm_WH_T_rf = boost_to_rf(quadrivector_WT, quadrivector_HT)
-    '''
     
     #calcolo l'angolo
     theta_star_ZL = theta_star(quadrivector_ZL, quadrivector_HL)
@@ -69,9 +49,7 @@ def main () :
     theta_star_WL = theta_star(quadrivector_WL, quadrivector_HL)
     theta_star_WT = theta_star(quadrivector_WT, quadrivector_HT)
     
-    #theta_star_ZL = compute_theta_star(quadrivector_ZL, quadrivector_HL)
-    #theta_star_ZT = compute_theta_star(quadrivector_ZT, quadrivector_HT)
-
+    
     #visualizzazione distribuzioni
     data = theta_star_ZL
     iqr = np.percentile(data, 75) - np.percentile(data, 25)
