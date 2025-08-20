@@ -4,7 +4,7 @@ import numpy as np
 import vector
 import seaborn as sb
 from scipy.stats import wasserstein_distance, ks_2samp
-from utils import read_file
+from utils import *
 import sys
 
 def contains_particle (particle_list, particle_ID) :
@@ -19,67 +19,31 @@ def main():
     
     #analisi polarizzazione longitudinale
     LHE_L = "unweighted_events_L.lhe"
-    events_L = read_file(LHE_L)
-    #print(len(events_L))
+    events_l = read_file(LHE_L)
     
-    events_Z_L = [e for e in events_L if contains_particle (e, 23)]
-    events_W_L = [e for e in events_L if contains_particle (e, 24) or contains_particle (e, -24)]
-    #print(len(events_Z_L), len(events_W_L))
-    
-    pt_Z_L = []
-    pt_W_L = []    
-    
-    for event in events_Z_L :
-        vector_Z_L = vector.obj(px = 0, py = 0, pz = 0, E = 0)
-        for i in event :
-            vecZ_L = vector.obj(px = i["px"], py = i["py"], pz = i["pz"], E = i["E"])
-            if i["pid"] == 23 :
-                pt_Z_L.append(vecZ_L.pt)
-                
-    for event in events_W_L :
-        vector_W_L = vector.obj(px = 0, py = 0, pz = 0, E = 0)
-        for i in event :
-            vecW_L = vector.obj(px = i["px"], py = i["py"], pz = i["pz"], E = i["E"])
-            if abs(i["pid"]) == 24 :
-                pt_W_L.append(vecW_L.pt)
-      
     #analisi polarizzazione trasversale
     LHE_T = "unweighted_events_T.lhe"
-    events_T = read_file(LHE_T)
-    #print(len(events_T))
-    
-    events_Z_T = [e for e in events_T if contains_particle (e, 23)]
-    events_W_T = [e for e in events_T if contains_particle (e, 24) or contains_particle (e, -24)]
-    #print(len(events_Z_T), len(events_W_T))
-    
-    pt_Z_T = []
-    pt_W_T = []    
-    
-    for event in events_Z_T :
-        vector_Z_T = vector.obj(px = 0, py = 0, pz = 0, E = 0)
-        for i in event :
-            vecZ_T = vector.obj(px = i["px"], py = i["py"], pz = i["pz"], E = i["E"])
-            if i["pid"] == 23 :
-                pt_Z_T.append(vecZ_T.pt)
-                
-    for event in events_W_T :
-        vector_W_T = vector.obj(px = 0, py = 0, pz = 0, E = 0)
-        for i in event :
-            vecW_T = vector.obj(px = i["px"], py = i["py"], pz = i["pz"], E = i["E"])
-            if abs(i["pid"]) == 24 :
-                pt_W_T.append(vecW_T.pt)  
-    
-    #numero totale di eventi per Z
-    N_events = len(events_Z_T) + len(events_Z_L)
-    #print(N_events) 
+    events_t = read_file(LHE_T)
     
     
-    data = pt_Z_L
+    pt_z_l = get_pt_of(23, events_l)
+    pt_w_l = get_pt_of(24, events_l)
+    pt_z_t = get_pt_of(23, events_t)
+    pt_w_t = get_pt_of(24, events_t)
+    
+    eta_z_l = get_eta_of(23, events_l)
+    eta_w_l = get_eta_of(24, events_l)
+    eta_z_t = get_eta_of(23, events_t)
+    eta_w_t = get_eta_of(24, events_t)
+    
+    
+    #rappresentazione
+    data = list(pt_z_l.values())
     iqr = np.percentile(data, 75) - np.percentile(data, 25)
     bin_width = 2 * iqr / (len(data) ** (1/3))
     n_binsZ = int((max(data) - min(data)) / bin_width)
       
-    data = pt_W_L
+    data = list(pt_w_l.values())
     iqr = np.percentile(data, 75) - np.percentile(data, 25)
     bin_width = 2 * iqr / (len(data) ** (1/3))
     n_binsW = int((max(data) - min(data)) / bin_width)
@@ -88,28 +52,61 @@ def main():
     fig, ax = plt.subplots(1, 2, figsize=(16, 5))
     plt.subplots_adjust(wspace=0.5)
        
-    sb.histplot(pt_Z_L, bins=n_binsZ, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[0],  label='Polarizzazione longitudinale',  alpha = 0.8)
-    sb.histplot(pt_Z_T, bins=n_binsZ, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5, alpha = 0.4, ax=ax[0], label='Polarizzazione trasversale')
-    ax[0].set_xlabel("Momento trasverso (GeV)")
-    ax[0].set_ylabel("Densità")
-    ax[0].set_title("Distribuzione momento Z")
+    sb.histplot(pt_z_l, bins=n_binsZ, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[0],  label='Polarizzazione longitudinale',  alpha = 0.8)
+    sb.histplot(pt_z_t, bins=n_binsZ, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5, alpha = 0.4, ax=ax[0], label='Polarizzazione trasversale')
+    ax[0].set_xlabel("Pt (GeV)")
+    ax[0].set_ylabel("dN/N")
+    ax[0].set_title("Distribuzione momento trasverso Z")
     ax[0].legend()
     
-    sb.histplot(pt_W_L, bins=n_binsW, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[1], label='Polarizzazione longitudinale',  alpha = 0.8)
-    sb.histplot(pt_W_T, bins=n_binsW, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5,  alpha = 0.4,
+    sb.histplot(pt_w_l, bins=n_binsW, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[1], label='Polarizzazione longitudinale',  alpha = 0.8)
+    sb.histplot(pt_w_t, bins=n_binsW, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5,  alpha = 0.4,
              ax=ax[1], label='Polarizzazione trasversale')
-    ax[1].set_xlabel("Momento trasverso (GeV)")
-    ax[1].set_ylabel("Densità")
-    ax[1].set_title("Distribuzione momento W")
+    ax[1].set_xlabel("Pt (GeV)")
+    ax[1].set_ylabel("dN/N")
+    ax[1].set_title("Distribuzione momento trasverso W")
     ax[1].legend()
 
-    #plt.savefig("Confronto momento trasverso.png", dpi=300)
+    plt.savefig("Confronto pt V.png", dpi=300)
     plt.show()
     
     
+    #rappresentazione distribuzioni eta
+    data = list(eta_z_l.values())
+    iqr = np.percentile(data, 75) - np.percentile(data, 25)
+    bin_width = 2 * iqr / (len(data) ** (1/3))
+    n_binsZ = int((max(data) - min(data)) / bin_width)
+      
+    data = list(eta_w_l.values())
+    iqr = np.percentile(data, 75) - np.percentile(data, 25)
+    bin_width = 2 * iqr / (len(data) ** (1/3))
+    n_binsW = int((max(data) - min(data)) / bin_width)
+    
+    sb.set(style="whitegrid")
+    fig, ax = plt.subplots(1, 2, figsize=(19, 5))
+    plt.subplots_adjust(wspace=0.5)
+       
+    sb.histplot(eta_z_l, bins=n_binsZ, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[0],  label='Polarizzazione longitudinale',  alpha = 0.8)
+    sb.histplot(eta_z_t, bins=n_binsZ, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5, alpha = 0.4, ax=ax[0], label='Polarizzazione trasversale')
+    ax[0].set_xlabel("η (rad)")
+    ax[0].set_ylabel("dN/N")
+    ax[0].set_title("Distribuzione pseudorapidità Z")
+    ax[0].legend()
+    
+    sb.histplot(eta_w_l, bins=n_binsW, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[1], label='Polarizzazione longitudinale',  alpha = 0.8)
+    sb.histplot(eta_w_t, bins=n_binsW, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5,  alpha = 0.4,
+             ax=ax[1], label='Polarizzazione trasversale')
+    ax[1].set_xlabel("η (rad)")
+    ax[1].set_ylabel("dN/N")
+    ax[1].set_title("Distribuzione pseudorapidità W")
+    ax[1].legend()
+
+    plt.savefig("Confronto eta V.png", dpi=300)
+    plt.show()
+    '''
     #confronto polarizzazioni W
-    height_L, b = np.histogram(pt_W_L, 30)         #altezza delle colonne della distribuzione longitudinale
-    height_T, b_t = np.histogram(pt_W_T, 30)       #altezza delle colonne della distribuzione trasversale
+    height_L, b = np.histogram(pt_w_l, 30)         #altezza delle colonne della distribuzione longitudinale
+    height_T, b_t = np.histogram(pt_w_t, 30)       #altezza delle colonne della distribuzione trasversale
     #print(len(height_L), len(height_T))
     
     height_tot = np.array([x+y for x, y in zip(height_L, height_T)])
@@ -122,8 +119,8 @@ def main():
     bin_center_W = [0.5 * (b[i] + b[i+1]) for i in range(len(b) - 1)]
     
     #confronto polarizzazioni Z
-    height_L_Z, b_Z = np.histogram(pt_Z_L, 30)         #altezza delle colonne della distribuzione longitudinale
-    height_T_Z, b_t_Z = np.histogram(pt_Z_T, 30)       #altezza delle colonne della distribuzione trasversale
+    height_L_Z, b_Z = np.histogram(pt_z_l, 30)         #altezza delle colonne della distribuzione longitudinale
+    height_T_Z, b_t_Z = np.histogram(pt_z_t, 30)       #altezza delle colonne della distribuzione trasversale
     
     
     height_tot_Z = np.array([x+y for x, y in zip(height_L_Z, height_T_Z)])
@@ -157,15 +154,15 @@ def main():
     
     plt.tight_layout()
     plt.show()
-    
+    '''
     
     #wasserstein distance
-    distance_z = wasserstein_distance(pt_Z_L, pt_Z_T)
-    k_s_z = ks_2samp(pt_Z_L, pt_Z_T)
+    distance_z = wasserstein_distance(list(pt_z_l.values()), list(pt_z_t.values()))
+    k_s_z = ks_2samp(list(pt_z_l.values()), list(pt_z_t.values()))
 
     #bin con massima distanza
-    height_l, bin_l = np.histogram(pt_Z_L, bins=40, density=True)
-    height_t, bin_t = np.histogram(pt_Z_T, bins=40, density=True)
+    height_l, bin_l = np.histogram(list(pt_z_l.values()), bins=40, density=True)
+    height_t, bin_t = np.histogram(list(pt_z_t.values()), bins=40, density=True)
     bin_center_Z = [0.5 * (bin_l[i] + bin_l[i+1]) for i in range(len(bin_l) - 1)]
     difference = [abs(x-y) for x,y in zip(height_l, height_t)]
     index_max = np.argmax(difference)
@@ -176,12 +173,12 @@ def main():
     print(f"Valore di pt per cui si ha massima differenza: {pt_max:0f}")
     
     
-    distance_w = wasserstein_distance(pt_W_L, pt_W_T)
-    k_s_w = ks_2samp(pt_W_L, pt_W_T)
+    distance_w = wasserstein_distance(list(pt_w_l.values()), list(pt_w_t.values()))
+    k_s_w = ks_2samp(list(pt_w_l.values()), list(pt_w_t.values()))
     
     #bin con massima distanza w
-    height_l, bin_l = np.histogram(pt_W_L, bins=40, density=True)
-    height_t, bin_t = np.histogram(pt_W_T, bins=40, density=True)
+    height_l, bin_l = np.histogram(list(pt_w_l.values()), bins=40, density=True)
+    height_t, bin_t = np.histogram(list(pt_w_t.values()), bins=40, density=True)
     bin_center_W = [0.5 * (bin_l[i] + bin_l[i+1]) for i in range(len(bin_l) - 1)]
     difference = [abs(x-y) for x,y in zip(height_l, height_t)]
     index_max = np.argmax(difference)

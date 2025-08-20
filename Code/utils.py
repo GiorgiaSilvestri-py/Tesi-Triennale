@@ -31,6 +31,12 @@ class Cinematic:
     
     def compute_pt(self):
         return self.build_fm().pt
+        
+    def compute_eta(self):
+        return self.build_fm().eta
+
+    def compute_phi(self):
+        return self.build_fm().phi
 
 #dizionario che associa pid => Cinematic
 
@@ -60,7 +66,7 @@ def print_dict(events_dict):
         
         print("\n" + "-"*40 + "\n")
 
-#------------------------------------------------------------------
+
 
 def get_fm_of(p_id, events_dict):
     '''
@@ -124,7 +130,8 @@ def get_eta_of(p_id, events_dict):
         print("Event ID: ", event_id, "\n\t Momento Trasverso: ", pt)
     '''   
     return eta_dict
-       
+    
+    
 def get_phi_of(p_id, events_dict):
     '''
     Crea la lista di eta di una particella (p_id)
@@ -145,8 +152,7 @@ def get_phi_of(p_id, events_dict):
         print("Event ID: ", event_id, "\n\t Momento Trasverso: ", pt)
     '''   
     return phi_dict
-
-#------------------------------------------------------------------------  
+    
     
 def get_thetastar_of(V_fm_dict, H_fm_dict):
     '''
@@ -191,29 +197,68 @@ def get_thetastar_of(V_fm_dict, H_fm_dict):
         cos_theta = compute_angle(p_vec, z_axis_rf)
         cos_list.append(cos_theta)
         
-    return cos_list   
+    return cos_list
+    
+def get_deltaphi_of(V_dict, lep_dict, antilep_dict, H_dict):
+    '''
+    Calcola la separazione azimutale fra i leptoni prodotti dal decadimento nel SDR VH
+    Procedimento:
+    - ci si sposta nel sdr giusto tramite boost di lorentz
+    - si applica il vettore di boost alla coppia leptone, antileptone
+    - si calcola phi per leptone e per antileptone
+    - si calcola la differenza
+    '''
+    deltaphi_list = []
+    
+    fm_VH = compute_tot_fm(V_dict, H_dict)                #dizionario di quadrimomenti totali
+
+    for event_id in V_dict.keys() & H_dict.keys() & fm_VH.keys() & lep_dict.keys() & antilep_dict.keys():
+        fm_v = V_dict[event_id]
+        fm_h = H_dict[event_id]
+        fm_lep = lep_dict[event_id]
+        fm_antilep = antilep_dict[event_id]
+        fm_tot = fm_VH[event_id]
+
+        #costruzione vettore di boost del singolo quadrimomento fm_tot
+        boost_vec = vector.obj(x = -fm_tot.px/fm_tot.E, y = -fm_tot.py/fm_tot.E, z = -fm_tot.pz/fm_tot.E)  
+        
+        fm_v_rf = fm_v.boost(boost_vec)
+        fm_lep_rf = fm_lep.boost(boost_vec)
+        fm_antilep_rf = fm_antilep.boost(boost_vec)
+        fm_h_rf = fm_h.boost(boost_vec)
+        
+        fm_VH_tot = fm_v_rf + fm_h_rf
+        
+        #controllo boost
+        
+        if abs(fm_VH_tot.px) > 1e-5 or abs(fm_VH_tot.py) > 1e-5 or abs(fm_VH_tot.pz) > 1e-5 :
+            print("Evento N°:", event_id, ". Trimomento non nullo: ", fm_VH_tot)
+        
+        deltaphi_list.append(abs(fm_lep_rf.deltaphi(fm_antilep_rf)))
+        
+    return deltaphi_list
     
         
-def get_theta1_of(Z_dict, lep_dict, antilep_dict, H_dict):
+def get_theta1_of(V_dict, lep_dict, antilep_dict, H_dict):
     '''
-    Calcola l'angolo theta fra la direzione di volo del leptone (dal decadimento della Z) e quella di H, nel SDR della Z.
+    Calcola l'angolo theta fra la direzione di volo del leptone (dal decadimento della V) e quella di H, nel SDR della V.
     Procedimento:
     - impone identità su id_evento
-    - calcola il vettore di boost dal quadrimomento della z
-    - boosta leptone e higgs nel sdr della z
+    - calcola il vettore di boost dal quadrimomento del VB
+    - boosta leptone e higgs nel sdr del VB
     - controlla che il sdr sia corretto (il momento somma deve essere nullo)
     - calcola l'angolo
     '''
 
     cos_list = []
 
-    for event_id in Z_dict.keys() & lep_dict.keys() & antilep_dict.keys() & H_dict.keys():
-        fm_z = Z_dict[event_id]
+    for event_id in V_dict.keys() & lep_dict.keys() & antilep_dict.keys() & H_dict.keys():
+        fm_v = V_dict[event_id]
         fm_lep = lep_dict[event_id]
         fm_antilep = antilep_dict[event_id]
         fm_h = H_dict[event_id]
         
-        boost_vec = vector.obj(x = -fm_z.px/fm_z.E, y = -fm_z.py/fm_z.E, z = -fm_z.pz/fm_z.E)
+        boost_vec = vector.obj(x = -fm_v.px/fm_v.E, y = -fm_v.py/fm_v.E, z = -fm_v.pz/fm_v.E)
         
         fm_lep_rf = fm_lep.boost(boost_vec)
         fm_antilep_rf = fm_antilep.boost(boost_vec)
@@ -231,8 +276,71 @@ def get_theta1_of(Z_dict, lep_dict, antilep_dict, H_dict):
         cos_list.append(theta_1)
         
     return cos_list
+    
+def phi1(V_dict, lep_dict, antilep_dict, H_dict):
+    '''
+    Calcola l'angolo φ1 tra il piano del decadimento del bosone e il piano di scattering partonico nel sdr VH.
+    Procedimento:
+    - ci si sposta nel sdr VH
+    - calcola il boost e boosta leptone, antileptone, V e H
+    - calcola i versori e l'angolo
+    '''
+    
+    phi1_list= []
+    
+    fm_tot_in = compute_tot_fm(V_dict, H_dict)
+    #print(fm_tot_in)
 
-#--------------------------------------------------------------------------------------------------------------
+    for event_id in V_dict.keys() & lep_dict.keys() & antilep_dict.keys() & H_dict.keys():
+        fm_v = V_dict[event_id]
+        fm_lep = lep_dict[event_id]
+        fm_antilep = antilep_dict[event_id]
+        fm_h = H_dict[event_id]
+        z_axis = vector.obj(px = 0, py = 0, pz = 1, E = 1)
+        
+        fm_tot_i = fm_v + fm_h #posso sommarli perché impongo già che l'id evento sia lo stesso
+        
+        boost_vec = vector.obj(x = -fm_tot_i.px/fm_tot_i.E, y = -fm_tot_i.py/fm_tot_i.E, z = -fm_tot_i.pz/fm_tot_i.E)
+        
+        fm_lep_rf = fm_lep.boost(boost_vec)
+        fm_v_rf = fm_v.boost(boost_vec)
+        fm_antilep_rf = fm_antilep.boost(boost_vec)
+        fm_h_rf = fm_h.boost(boost_vec)
+        z_ax_r = z_axis.boost(boost_vec)
+        z_ax_rf = z_ax_r.to_3D()
+        
+        #controllo boost
+        fm_tot = fm_v_rf + fm_h_rf
+        if abs(fm_tot.px) > 1e-5 or abs(fm_tot.py) > 1e-5 or abs(fm_tot.pz) > 1e-5 :
+            print("Evento N°:", event_id, ". Trimomento non nullo: ", fm_tot)
+        
+        #print(fm_tot)
+        
+        pL_vec = fm_lep_rf.to_3D()
+        p_aL_vec = fm_antilep_rf.to_3D()
+        p_v_vec = fm_v_rf.to_3D()
+        
+        pl = np.array([pL_vec.x, pL_vec.y, pL_vec.z])
+        plbar = np.array([p_aL_vec.x, p_aL_vec.y, p_aL_vec.z])
+        pv = np.array([p_v_vec.x, p_v_vec.y, p_v_vec.z])
+        nz = np.array([z_ax_rf.x, z_ax_rf.y, z_ax_rf.z])
+        
+        cross = np.cross(pl, plbar)
+        nv = cross / np.linalg.norm(cross)
+        #nV = pL_vec.cross(p_aL_vec).unit()
+        
+        cross = np.cross(nz, pv)
+        nsc = cross / np.linalg.norm(cross)
+        #n_sc = z_ax_rf.cross(p_z_vec).unit()
+        
+        num = np.dot(pv, np.cross(nv, nsc))
+        phi1 = np.sign(num) * np.arccos( np.dot(nv, nsc) )
+         
+        #phi1 = np.sign(p_z_vec @ nV.cross(n_sc)) * np.arccos( (nV @ n_sc) )
+        phi1_list.append(abs(phi1))
+   
+    return phi1_list 
+
 
 def compute_tot_fm(fm1_dict, fm2_dict):
     '''
@@ -240,10 +348,11 @@ def compute_tot_fm(fm1_dict, fm2_dict):
     '''
     fm_tot_dict = {}
     
-    for event_id1, fm_1 in fm1_dict.items() :
-        for event_id2, fm_2 in fm2_dict.items() :
-            if event_id1 == event_id2 :
-                fm_tot_dict[event_id1] = fm_1 + fm_2
+    for event_id in fm1_dict.keys() & fm2_dict.keys():
+        fm_1 = fm1_dict[event_id]
+        fm_2 = fm2_dict[event_id]
+
+        fm_tot_dict[event_id] = fm_1 + fm_2
     '''       
     for event_id, fm_tot in fm_tot_dict.items() :
         if event_id > 10:
@@ -264,14 +373,45 @@ def connect_lep_to_V(events_dict):
     z_fm = get_fm_of([23], events_dict)
     w_fm = get_fm_of([24, -24], events_dict)
     
-    lep_dict = get_fm_of([11, 12, 14, 16, 13, 15], events_dict)
-    anti_lep_dict = get_fm_of([-11, -12, -14, -16, -13, -15], events_dict)
+    lep_dict = get_fm_of([11,  13, 15], events_dict)
+    anti_lep_dict = get_fm_of([-11, -13, -15], events_dict)
     
     for event_id, lep_fm in lep_dict.items():
         if event_id in z_fm.keys():
             lep_from_Z[event_id] = lep_fm
         if event_id in w_fm.keys():
             lep_from_W[event_id] = lep_fm
+        
+            
+    for event_id, antilep_fm in anti_lep_dict.items():
+        if event_id in z_fm.keys():
+            antilep_from_Z[event_id] = antilep_fm
+        if event_id in w_fm.keys():
+            antilep_from_W[event_id] = antilep_fm
+    
+    return lep_from_Z, antilep_from_Z, lep_from_W, antilep_from_W
+    
+
+def connect_alllep_to_V(events_dict):
+    '''
+    Ricostruisce le liste di leptoni decaduti dalla Z o dalla W (inclusi neutrini)
+    '''
+    
+    lep_from_Z, lep_from_W = {}, {}
+    antilep_from_Z, antilep_from_W = {}, {}
+    
+    z_fm = get_fm_of([23], events_dict)
+    w_fm = get_fm_of([24, -24], events_dict)
+    
+    lep_dict = get_fm_of([11, 12, 13, 14, 15, 16], events_dict)
+    anti_lep_dict = get_fm_of([-11, -12, -13, -14,  -15, -16], events_dict)
+    
+    for event_id, lep_fm in lep_dict.items():
+        if event_id in z_fm.keys():
+            lep_from_Z[event_id] = lep_fm
+        if event_id in w_fm.keys():
+            lep_from_W[event_id] = lep_fm
+        
             
     for event_id, antilep_fm in anti_lep_dict.items():
         if event_id in z_fm.keys():
@@ -281,7 +421,6 @@ def connect_lep_to_V(events_dict):
     
     return lep_from_Z, antilep_from_Z, lep_from_W, antilep_from_W
 
-#---------------------------------------------------------------------------------------
 
 def read_file(nome_file):
 

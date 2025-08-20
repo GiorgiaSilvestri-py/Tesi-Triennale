@@ -10,32 +10,33 @@ def main () :
     '''
     Confronta le distribuzioni dell'angolo theta*, definito come la direzione di volo di Z (o W) calcolato nel sdr del centro di massa VH
     ''' 
-    
+
     #longitudinale
     LHE_L = "unweighted_events_L.lhe"
     eventsL_dict = read_file(LHE_L)
-    
-    W_fm_L = get_fm_of(24, eventsL_dict)               #dizionario di quadrimomenti con ID evento per la W
-    Z_fm_L = get_fm_of(23, eventsL_dict)               #dizionario di quadrimomenti con ID evento per la Z
-    
-    H_fm_L = get_fm_of(25, eventsL_dict)               #dizionario di quadrimomenti con ID evento per H
-    #compute_tot_fm(Z_fm, H_fm)                      #dizionario di quadrimomenti totali (ZH) con ID evento
-    
+
+    #quadrimomenti
+    W_fm_L = get_fm_of([24, -24], eventsL_dict)               
+    Z_fm_L = get_fm_of([23], eventsL_dict)               
+    lep_from_Z, antilep_from_Z, lep_from_W, antilep_from_W = connect_lep_to_V(eventsL_dict)
+    H_fm_L = get_fm_of([25], eventsL_dict)               
+                                             
+    #angoli
     theta_star_ZL = get_thetastar_of(Z_fm_L, H_fm_L)
     theta_star_WL = get_thetastar_of(W_fm_L, H_fm_L)
- 
+
+
     #trasversale
     LHE_T = "unweighted_events_T.lhe"
     eventsT_dict = read_file(LHE_T)
 
-    W_fm_T = get_fm_of(24, eventsT_dict)               #dizionario di quadrimomenti con ID evento per la W
-    Z_fm_T = get_fm_of(23, eventsT_dict)               #dizionario di quadrimomenti con ID evento per la Z
-    
-    H_fm_T = get_fm_of(25, eventsT_dict)               #dizionario di quadrimomenti con ID evento per la Z
-    #fm_tot = compute_tot_fm(Z_fm_T, H_fm_T)                    #dizionario di quadrimomenti totali (ZH) con ID evento
-    
-    
-    #calcolo l'angolo
+    #quadrimomenti
+    W_fm_T = get_fm_of([24, -24], eventsT_dict)               
+    Z_fm_T = get_fm_of([23], eventsT_dict)               
+    lep_from_ZT, antilep_from_ZT, lep_from_WT, antilep_from_WT = connect_lep_to_V(eventsT_dict)
+    H_fm_T = get_fm_of([25], eventsT_dict)               
+                 
+    #angoli
     theta_star_ZT = get_thetastar_of(Z_fm_T, H_fm_T)
     theta_star_WT = get_thetastar_of(W_fm_T, H_fm_T)
     
@@ -73,6 +74,6 @@ def main () :
 
     #plt.savefig("Confronto massa invariante.png", dpi=300)
     plt.show()
-  
+    
 if __name__ == '__main__' :
     main() 
