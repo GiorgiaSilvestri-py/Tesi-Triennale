@@ -12,7 +12,8 @@ def main():
     '''
     Confronto tramite pt_h, eta_h, e massa invariante VH
     '''
-    
+    apply_smearing = False
+    print("---- BUILDING DICTIONARIES ----")
     #analisi polarizzazione longitudinale
     LHE_L = "unweighted_events_L.lhe"
     events_H_L = read_file(LHE_L)
@@ -21,8 +22,8 @@ def main():
     LHE_L = "unweighted_events_L.lhe"
     eventsL_dict = read_file(LHE_L)
     
-    pt_H_L = get_pt_of(25, events_H_L)
-    eta_H_L = get_eta_of(25, events_H_L)
+    pt_H_L = get_pt_of([25], events_H_L, apply_smearing = apply_smearing)
+    eta_H_L = get_eta_of([25], events_H_L, apply_smearing = apply_smearing)
    
    
     #analisi polarizzazione trasversale
@@ -30,10 +31,10 @@ def main():
     events_H_T = read_file(LHE_T)
     #print("N events_T: ", len(events_T))
 
-    pt_H_T = get_pt_of(25, events_H_T)
-    eta_H_T = get_eta_of(25, events_H_T)
+    pt_H_T = get_pt_of([25], events_H_T, apply_smearing = apply_smearing)
+    eta_H_T = get_eta_of([25], events_H_T, apply_smearing = apply_smearing)
     
-   
+    print("---- BUILDING HISTOGRAMS ----")  
     #rappresentazione confronto
     data = list(pt_H_L.values())
     iqr = np.percentile(data, 75) - np.percentile(data, 25)
@@ -67,7 +68,7 @@ def main():
     #plt.savefig("Confronto Higgs.png", dpi=300)
     plt.show()
     
-    
+    print("---- COMPUTING METRICS ----")
     #wasserstein distance pt
     distance_z = wasserstein_distance(list(pt_H_L.values()), list(pt_H_T.values()))
     k_s_z = ks_2samp(list(pt_H_L.values()), list(pt_H_T.values()))
@@ -80,6 +81,8 @@ def main():
     index_max = np.argmax(difference)
     pt_max = bin_center[index_max]
 
+
+    print("---- COMPUTING METRICS ----")
     print(f"EMD (pt): {distance_z:.2f} Gev")
     print(f"Kolmogorov-Smirnov stat: {k_s_z.statistic:.3f}, p-value: {k_s_z.pvalue:.3f}")
     print(f"Valore di pt per cui si ha massima differenza: {pt_max:0f}")
@@ -108,9 +111,9 @@ def main():
     LHE_L = "unweighted_events_L.lhe"
     eventsL_dict = read_file(LHE_L)
     
-    W_fm_L = get_fm_of([24, -24], eventsL_dict)                                 
-    Z_fm_L = get_fm_of([23], eventsL_dict)                                          
-    H_fm_L = get_fm_of([25], eventsL_dict)  
+    W_fm_L = get_fm_of([24, -24], eventsL_dict, apply_smearing = apply_smearing)                                 
+    Z_fm_L = get_fm_of([23], eventsL_dict, apply_smearing = apply_smearing)                                          
+    H_fm_L = get_fm_of([25], eventsL_dict, apply_smearing = apply_smearing)  
     
     #somma dei due e massa invariante
     fm_ZH_L = compute_tot_fm(Z_fm_L, H_fm_L)
@@ -124,9 +127,9 @@ def main():
     LHE_T = "unweighted_events_T.lhe"
     eventsT_dict = read_file(LHE_T)
     
-    W_fm_T = get_fm_of([24, -24], eventsT_dict)                                 
-    Z_fm_T = get_fm_of([23], eventsT_dict)                                          
-    H_fm_T = get_fm_of([25], eventsT_dict)  
+    W_fm_T = get_fm_of([24, -24], eventsT_dict, apply_smearing = apply_smearing)                                 
+    Z_fm_T = get_fm_of([23], eventsT_dict, apply_smearing = apply_smearing)                                          
+    H_fm_T = get_fm_of([25], eventsT_dict, apply_smearing = apply_smearing)  
     
     #somma dei due e massa invariante
     fm_ZH_T = compute_tot_fm(Z_fm_T, H_fm_T)
@@ -148,7 +151,7 @@ def main():
     bin_width = 2 * iqr / (len(data) ** (1/3))
     n_Bins = int((max(data) - min(data)) / bin_width)
     
-    
+    print("---- BUILDING HISTOGRAMS ----")
     sb.set(style="whitegrid")
     fig, ax = plt.subplots(1, 2, figsize=(16, 5))
     plt.subplots_adjust(wspace=0.5)
@@ -160,8 +163,10 @@ def main():
     ax[0].set_title("Distribuzione massa invariante ZH")
     ax[0].legend()
     
-    sb.histplot(M_WH_l, bins=n_Bins, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[1], label='Polarizzazione longitudinale',  alpha = 0.8)
-    sb.histplot(M_WH_t, bins=n_Bins, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5,  alpha = 0.4,
+    print(M_WH_l)
+    
+    sb.histplot(M_WH_l, bins=n_Bins, binrange = (0, 2000), color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[1], label='Polarizzazione longitudinale',  alpha = 0.8)
+    sb.histplot(M_WH_t, bins=n_Bins, binrange = (0, 2000), color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5,  alpha = 0.4,
              ax=ax[1], label='Polarizzazione trasversale')
     ax[1].set_xlabel("M (GeV)")
     ax[1].set_ylabel("dN/N")
@@ -201,7 +206,7 @@ def main():
     
     print(f"EMD (M_WH): {distance_w:.2f} rad")
     print(f"Kolmogorov-Smirnov stat: {k_s_w.statistic:.3f}, p-value: {k_s_w.pvalue:.3f}")
-    print(f"Valore di eta per cui si ha massima differenza: {m_max:0f}")
+    print(f"Valore di M per cui si ha massima differenza: {m_max:0f}")
 
 if __name__ == '__main__':
     main()  

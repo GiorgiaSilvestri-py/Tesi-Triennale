@@ -191,7 +191,7 @@ def compute_neutrino_momentum_from_particles(vec_lepton, vec_neutrino_expected):
     return built_neutrino_vector
 
 
-
+'''
 def get_fm_of(p_id, events_dict, apply_smearing = False):
     """
     Ricostruisce il quadrivettore di una particella -> fm_dict.
@@ -368,6 +368,188 @@ def get_fm_of(p_id, events_dict, apply_smearing = False):
                 fm_dict[event_id] = fm_vec_1 + fm_vec_2
 
     return fm_dict
+
+
+'''
+#lhe level
+def get_fm_of(p_id, events_dict, apply_smearing = False):
+    """
+    Ricostruisce il quadrivettore di una particella -> fm_dict.
+    - se p_id è Higgs (25) o leptoni (11, 13, 15), li legge direttamente
+    - se p_id è Z (23) o W (±24), somma i quadrivettori dei figli leptoni
+    - se neutrini pone pz=0
+    """
+    fm_dict = {}
+    
+    if apply_smearing:
+        if set(p_id) == set([11, 13, 15]):
+            for event_id, particles_dict in events_dict.items():
+                for pid, cinematic in particles_dict.items():
+                    if pid in p_id:
+                        non_smeared_momentum = cinematic.build_fm()
+                        smeared_momentum = apply_smearing_to(non_smeared_momentum)
+                        fm_dict[event_id] = smeared_momentum
+                        
+        if set(p_id) == set([-11, -13, -15]):
+            for event_id, particles_dict in events_dict.items():
+                for pid, cinematic in particles_dict.items():
+                    if pid in p_id:
+                        non_smeared_momentum = cinematic.build_fm()
+                        smeared_momentum = apply_smearing_to(non_smeared_momentum)
+                        fm_dict[event_id] = smeared_momentum
+        
+        
+        if set(p_id) == set([11, 12, 13, 14, 15, 16]):
+            for event_id, particles_dict in events_dict.items():
+                for pid, cinematic in particles_dict.items():
+                    if pid in [11, 13, 15]:
+                        non_smeared_momentum = cinematic.build_fm()
+                        smeared_momentum = apply_smearing_to(non_smeared_momentum)
+                        fm_dict[event_id] = smeared_momentum
+                    if pid in [12, 14, 16]:
+                        non_smeared_momentum = compute_neutrino_momentum(events_dict, event_id)
+                        smeared_momentum = apply_smearing_to(non_smeared_momentum, is_neutrino = True)
+                        fm_dict[event_id] = smeared_momentum
+                        
+        if set(p_id) == set([-11, -12, -13, -14, -15, -16]):
+            for event_id, particles_dict in events_dict.items():
+                for pid, cinematic in particles_dict.items():
+                    if pid in [-11, -13, -15]:
+                        non_smeared_momentum = cinematic.build_fm()
+                        smeared_momentum = apply_smearing_to(non_smeared_momentum)
+                        fm_dict[event_id] = smeared_momentum
+                    if pid in [-12, -14, -16]:
+                        non_smeared_momentum = compute_neutrino_momentum(events_dict, event_id)
+                        smeared_momentum = apply_smearing_to(non_smeared_momentum, is_neutrino = True)
+                        fm_dict[event_id] = smeared_momentum
+                   
+        if p_id == [23]:
+            for event_id, particles_dict in events_dict.items():
+                fm_vec_1 = vector.obj(px = 0, py = 0, pz = 0, E = 0)
+                fm_vec_2 = vector.obj(px = 0, py = 0, pz = 0, E = 0)
+                
+                for pid, cinematic in particles_dict.items():
+                    if (pid) in [11, 13, 15]:
+                        non_smeared_momentum = cinematic.build_fm()
+                        smeared_momentum = apply_smearing_to(non_smeared_momentum)
+                        fm_vec_1 = smeared_momentum
+                    if (pid) in [-11, -13, -15]:
+                        non_smeared_momentum = cinematic.build_fm()
+                        smeared_momentum = apply_smearing_to(non_smeared_momentum)
+                        fm_vec_2 = smeared_momentum
+                        
+                if not is_nonzero(fm_vec_1) or not is_nonzero(fm_vec_2):
+                    continue                                                    # salta l’evento se manca uno dei due
+                fm_dict[event_id] = fm_vec_1 + fm_vec_2
+                
+        if set(p_id) == set([24, -24]):
+            for event_id, particles_dict in events_dict.items():
+                event_type = f_event_type(particles_dict)
+                
+                #24 = W; 23 = Z
+                if event_type == 23:
+                    continue
+                    
+                fm_vec_1 = vector.obj(px = 0, py = 0, pz = 0, E = 0)
+                fm_vec_2 = vector.obj(px = 0, py = 0, pz = 0, E = 0)
+                
+                for pid, cinematic in particles_dict.items():
+                    if abs(pid) in [11, 13, 15]:
+                        non_smeared_momentum = cinematic.build_fm()
+                        smeared_momentum = apply_smearing_to(non_smeared_momentum)
+                        fm_vec_1 = smeared_momentum
+                        
+                for pid, cinematic in particles_dict.items():
+                    if abs(pid) in [12, 14, 16]:
+                        non_smeared_momentum = cinematic.build_fm()
+                        smeared_momentum = apply_smearing_to(non_smeared_momentum, is_neutrino = True)
+                        fm_vec_2 = compute_neutrino_momentum_from_particles(fm_vec_1, smeared_momentum)
+                        
+                if not is_nonzero(fm_vec_1) or not is_nonzero(fm_vec_2):
+                    continue                       # salta l’evento se manca uno dei due
+                fm_dict[event_id] = fm_vec_1 + fm_vec_2
+        
+        if set(p_id) == set([25]):
+            for event_id, particles_dict in events_dict.items():
+                for pid, cinematic in particles_dict.items():
+                    if pid in p_id:
+                        fm_dict[event_id] = cinematic.build_fm()
+                        
+                        
+    else:
+        if set(p_id) == set([11, 13, 15]) or set(p_id) == set([25]):
+            for event_id, particles_dict in events_dict.items():
+                for pid, cinematic in particles_dict.items():
+                    if pid in p_id:
+                        fm_dict[event_id] = cinematic.build_fm()
+                        
+        if set(p_id) == set([-11, -13, -15]):
+            for event_id, particles_dict in events_dict.items():
+                for pid, cinematic in particles_dict.items():
+                    if pid in p_id:
+                        fm_dict[event_id] = cinematic.build_fm()
+                        
+        if set(p_id) == set([11, 12, 13, 14, 15, 16]):
+            for event_id, particles_dict in events_dict.items():
+                for pid, cinematic in particles_dict.items():
+                    if pid in [11, 13, 15]:
+                        fm_dict[event_id] = cinematic.build_fm()
+                    if pid in [12, 14, 16]:
+                        fm_dict[event_id] = cinematic.build_fm()
+                        
+        if set(p_id) == set([-11, -12, -13, -14, -15, -16]):
+            for event_id, particles_dict in events_dict.items():
+                for pid, cinematic in particles_dict.items():
+                    if pid in [-11, -13, -15]:
+                        fm_dict[event_id] = cinematic.build_fm()
+                    if pid in [-12, -14, -16]:
+                        fm_dict[event_id] = cinematic.build_fm()
+         
+        if p_id == [23]:
+            for event_id, particles_dict in events_dict.items():
+                event_type = f_event_type(particles_dict)
+                
+                #24 = W; 23 = Z
+                if event_type == 24 or event_type == -24:
+                    continue
+                    
+                fm_vec_1 = vector.obj(px = 0, py = 0, pz = 0, E = 0)
+                fm_vec_2 = vector.obj(px = 0, py = 0, pz = 0, E = 0)
+                
+                for pid, cinematic in particles_dict.items():
+                    if (pid) in [11, 13, 15]:
+                        fm_vec_1 = cinematic.build_fm()
+                    if (pid) in [-11, -13, -15]:
+                        fm_vec_2 = vector.obj(px = cinematic.px, py = cinematic.py, pz = cinematic.pz, E = cinematic.E)
+                           
+                if not is_nonzero(fm_vec_1) or not is_nonzero(fm_vec_2):
+                    continue                                                    # salta l’evento se manca uno dei due
+                fm_dict[event_id] = fm_vec_1 + fm_vec_2
+                
+        elif set(p_id) == set([24, -24]):
+            for event_id, particles_dict in events_dict.items():
+                event_type = f_event_type(particles_dict)
+                
+                #24 = W; 23 = Z
+                if event_type == 23:
+                    continue
+                fm_vec_1 = vector.obj(px = 0, py = 0, pz = 0, E = 0)
+                fm_vec_2 = vector.obj(px = 0, py = 0, pz = 0, E = 0)
+                
+                for pid, cinematic in particles_dict.items():
+                    if abs(pid) in [11, 13, 15]:
+                        fm_vec_1 = cinematic.build_fm()
+                       
+                    if abs(pid) in [12, 14, 16]:
+                        fm_vec_2 = cinematic.build_fm()
+                        
+                if not is_nonzero(fm_vec_1) or not is_nonzero(fm_vec_2):
+                    print("WARNING")                                                    # salta l’evento se manca uno dei due
+                fm_dict[event_id] = fm_vec_1 + fm_vec_2
+
+    return fm_dict
+
+
     
 def f_event_type(particles_dict):
     
@@ -478,7 +660,7 @@ def get_thetastar_of(V_fm_dict, H_fm_dict):
         p_vec = vector.obj(x = fm_v_rf.px, y = fm_v_rf.py, z = fm_v_rf.pz)      #direzione di volo di V
         
         cos_theta = compute_angle(p_vec, z_axis_rf)
-        cos_list.append(cos_theta)
+        cos_list.append(abs(cos_theta))
         
     return cos_list
     
@@ -561,7 +743,7 @@ def get_theta1_of(V_dict, lep_dict, antilep_dict, H_dict):
         h_direction = vector.obj(x = fm_h_rf.px, y = fm_h_rf.py, z = fm_h_rf.pz)
         
         theta_1 = compute_angle(lep_direction, h_direction)
-        cos_list.append(theta_1)
+        cos_list.append(abs(theta_1))
         
     return cos_list
     
@@ -643,7 +825,6 @@ def get_lep_ptbalance(events_dict, apply_smearing = False):
     z_fm = get_fm_of([23], events_dict, apply_smearing = apply_smearing)
     zlep, zantilep, _, _ = build_decay_products(events_dict, apply_smearing = apply_smearing)
     
-    
     for event_id in z_fm.keys() & zlep.keys() & zantilep.keys() :
         p4z = z_fm[event_id]
         p4lep = zlep[event_id]
@@ -661,7 +842,7 @@ def get_lep_ptbalance(events_dict, apply_smearing = False):
     
         pt_balance_list_z.append(pt_balance)
         
-    w_fm = get_fm_of([24, -24], events_dict, apply_smearing = apply_smearing)
+    w_fm = get_fm_of([24, -24], events_dict)
     _, _, wlep, wantilep = build_decay_products(events_dict, apply_smearing = apply_smearing)
     
     
@@ -698,19 +879,13 @@ def compute_tot_fm(fm1_dict, fm2_dict):
         fm_2 = fm2_dict[event_id]
 
         fm_tot_dict[event_id] = fm_1 + fm_2
-    '''       
-    for event_id, fm_tot in fm_tot_dict.items() :
-        if event_id > 10:
-            break
-        print("Event ID: ", event_id, "\n\t Quadrimomento Somma: ", fm_tot)
-    '''   
-    return fm_tot_dict
-    
 
+    return fm_tot_dict
+
+'''
+#non lhe level version
 def build_decay_products(events_dict, apply_smearing = False):
-    '''
-    Restituisce dizionari di prodotti di decadimento della Z (no neutrini) e della W (con neutrini)
-    '''
+
     
     lepton_dict_z = {}
     antilepton_dict_z = {}
@@ -806,11 +981,111 @@ def build_decay_products(events_dict, apply_smearing = False):
     antilepton_dict_w.update(antilepton_dict_w_minus)
     
     return lepton_dict_z, antilepton_dict_z, lepton_dict_w, antilepton_dict_w
+
+
+'''
+#lhe level version
+def build_decay_products(events_dict, apply_smearing = False):
     
+    lepton_dict_z = {}
+    antilepton_dict_z = {}
+    
+    antilepton_dict_w_plus = {}
+    lepton_dict_w_plus = {}
+    
+    antilepton_dict_w_minus = {}
+    lepton_dict_w_minus = {}         
+    
+    if apply_smearing:
+        for event_id, p_dict in events_dict.items():
+            #building Z dictionary
+            event_type = f_event_type(p_dict)    #24 = W; 23 = Z
+            if event_type == 23:
+              
+                for pid, cinematic in p_dict.items():
+                    if pid in [11, 13, 15]:
+                        non_smeared_fm = cinematic.build_fm()
+                        lepton_dict_z[event_id] = apply_smearing_to(non_smeared_fm)
+                    if pid in [-11, -13, -15]:
+                        non_smeared_fm = cinematic.build_fm()
+                        antilepton_dict_z[event_id] = apply_smearing_to(non_smeared_fm)
+            
+            #building W+ dictionary --> l+n
+            if event_type == 24:
+                for pid, cinematic in p_dict.items():
+                    if pid in [-11, -13, -15]:
+                        antilepton_vec_non_smeared = cinematic.build_fm()
+                        antilepton_vec_smeared = apply_smearing_to(antilepton_vec_non_smeared)
+                        antilepton_dict_w_plus[event_id] = antilepton_vec_smeared
+                for pid, cinematic in p_dict.items():
+                    if pid in [12, 14, 16]:
+                        vec_neutrino_expected = cinematic.build_fm()
+                        vec_neutrino_smeared = apply_smearing_to(vec_neutrino_expected, is_neutrino = True)
+                        lepton_dict_w_plus[event_id] = compute_neutrino_momentum_from_particles(antilepton_vec_smeared, vec_neutrino_smeared)
+            
+            #building W- dictionary --> l-n_bar
+            if event_type == -24:
+                for pid, cinematic in p_dict.items():
+                    if pid in [11, 13, 15]:
+                        lepton_vec = cinematic.build_fm()
+                        lepton_vec_smeared = apply_smearing_to(lepton_vec)
+                        lepton_dict_w_minus[event_id] = lepton_vec_smeared
+                for pid, cinematic in p_dict.items():
+                    if pid in [-12, -14, -16]:
+                        antineutrino_vec = cinematic.build_fm()
+                        antineutrino_smeared = apply_smearing_to(antineutrino_vec, is_neutrino = True)
+                        antilepton_dict_w_minus[event_id] = compute_neutrino_momentum_from_particles(lepton_vec_smeared, antineutrino_smeared)
+        
+        
+    else:
+        for event_id, p_dict in events_dict.items():
+            #building Z dictionary
+            event_type = f_event_type(p_dict)    #24 = W; 23 = Z
+            if event_type == 23:
+              
+                for pid, cinematic in p_dict.items():
+                    if pid in [11, 13, 15]:
+                        lepton_dict_z[event_id] = cinematic.build_fm()
+                    if pid in [-11, -13, -15]:
+                        antilepton_dict_z[event_id] = cinematic.build_fm()
+            
+            #building W+ dictionary --> l+n
+            if event_type == 24:
+                for pid, cinematic in p_dict.items():
+                    if pid in [-11, -13, -15]:
+                        antilepton_vec = cinematic.build_fm()
+                        antilepton_dict_w_plus[event_id] = antilepton_vec
+                for pid, cinematic in p_dict.items():
+                    if pid in [12, 14, 16]:
+                        vec_neutrino_expected = cinematic.build_fm()
+                        lepton_dict_w_plus[event_id] =vec_neutrino_expected
+            
+            #building W- dictionary --> l-n_bar
+            if event_type == -24:
+                for pid, cinematic in p_dict.items():
+                    if pid in [11, 13, 15]:
+                        lepton_vec = cinematic.build_fm()
+                        lepton_dict_w_minus[event_id] = lepton_vec
+                for pid, cinematic in p_dict.items():
+                    if pid in [-12, -14, -16]:
+                        antineutrino_vec = cinematic.build_fm()
+                        antilepton_dict_w_minus[event_id] =  antineutrino_vec
+                    
+    lepton_dict_w = {}
+    antilepton_dict_w = {}
+    
+    lepton_dict_w.update(lepton_dict_w_plus)
+    lepton_dict_w.update(lepton_dict_w_minus)
+    
+    antilepton_dict_w.update(antilepton_dict_w_plus)
+    antilepton_dict_w.update(antilepton_dict_w_minus)
+    
+    return lepton_dict_z, antilepton_dict_z, lepton_dict_w, antilepton_dict_w
+  
+
+   
 def connect_lep_to_V(events_dict):
-    '''
-    Ricostruisce le liste di leptoni decaduti dalla Z o dalla W
-    '''
+  
     
     lep_from_Z, lep_from_W = {}, {}
     antilep_from_Z, antilep_from_W = {}, {}
@@ -838,9 +1113,7 @@ def connect_lep_to_V(events_dict):
     
 
 def connect_alllep_to_V(events_dict):
-    '''
-    Ricostruisce le liste di leptoni decaduti dalla Z o dalla W (inclusi neutrini)
-    '''
+ 
     
     lep_from_Z, lep_from_W = {}, {}
     antilep_from_Z, antilep_from_W = {}, {}
@@ -924,9 +1197,7 @@ def contains_particle (particle_list, particle_ID) :
 #--------------------------------------------------------------------------------------------------------------------------------
             
 def build_fm_ZW (events_list) :
-    '''
-    restituisce liste di (vector.obj) quadrivettori della particella (W/Z) sommando quelli dei suoi prodotti di decadimento
-    '''
+    
     qvectorZ_list, qvectorW_list = [], []
     
     events_Z = [e for e in events_list if contains_particle (e, 23)]
@@ -956,9 +1227,7 @@ def build_fm_ZW (events_list) :
 #------------------------------------------------------------------------------------------------------------------------------
 
 def build_decay_lists (events_list) :
-    '''
-    restituisce liste di (vector.obj) quadrivettori della particella (Z/W) e liste di quadrivettori dei leptoni/antileptoni prodotti dal decadimento della Z
-    '''
+   
     
     qvectorZ_list, qvectorW_list = [], []
     fm_lepZ_list, fm_lepW_list = [], []
@@ -1055,11 +1324,10 @@ def compute_angle_between(v1, v2):
 
     cos_theta = np.dot(p1, p2) / (np.linalg.norm(p1) * np.linalg.norm(p2))
     
-    return np.arccos(cos_theta)
-    
+    return cos_theta
+  
     
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 
 
 def build_df_dict_Z(LHE_file, apply_smearing = False):
@@ -1126,19 +1394,19 @@ def build_df_dict_Z(LHE_file, apply_smearing = False):
 
     #creazione dataframe
     log = {
-            "Pt leptone"         : pt_l1,
-            "Pt antileptone"     : pt_l2,
-            "Eta leptone"        : eta_l1,
-            "Eta antileptone"    : eta_l2,
-            "Phi leptone"        : phi_l1,
-            "Phi antileptone"    : phi_l2,
+            "Pt lepton"         : pt_l1,
+            "Pt antilepton"     : pt_l2,
+            "Eta lepton"        : eta_l1,
+            "Eta antilepton"    : eta_l2,
+            "Phi lepton"        : phi_l1,
+            "Phi antilepton"    : phi_l2,
             "Pt Z"               : pt_z,
             "Pt H"               : pt_h,
             "Eta Z"              : eta_z,
             "Eta H"              : eta_h,
             "Phi Z"              : phi_z,
             "Phi H"              : phi_h,
-            "Massa invariante ZH": M_zh,
+            "ZH invariant mass"  :  M_zh,
             "Pt balance"         : pt_b_z,
             "cos(θ*)"            : cos_star,
             "cos(θ1)"            : cos_1,
@@ -1223,7 +1491,7 @@ def build_df_dict_W(LHE_file, apply_smearing = False):
     eta_w = [fm_w.eta for fm_w in list(fm_w_dict.values())]
     eta_h = [fm_h.eta for fm_h in list(fm_h_dict.values())]
     phi_w = [fm_w.phi for fm_w in list(fm_w_dict.values())]
-    phi_h = [fm_h.phi for fm_h in list(fm_h_dictfm_h_dict.values())]
+    phi_h = [fm_h.phi for fm_h in list(fm_h_dict.values())]
     M_wh  = [fm_tot.M for fm_tot in list(compute_tot_fm(fm_w_dict, fm_h_dict).values())]
     
     cos_star  = get_thetastar_of(fm_w_dict, fm_h_dict)
@@ -1233,19 +1501,19 @@ def build_df_dict_W(LHE_file, apply_smearing = False):
 
     #creazione dataframe
     log = {
-            "Pt leptone"         : pt_l1,
-            "Pt antileptone"     : pt_l2,
-            "Eta leptone"        : eta_l1,
-            "Eta antileptone"    : eta_l2,
-            "Phi leptone"        : phi_l1,
-            "Phi antileptone"    : phi_l2,
+            "Pt lepton"         : pt_l1,
+            "Pt antilepton"     : pt_l2,
+            "Eta lepton"        : eta_l1,
+            "Eta antilepton"    : eta_l2,
+            "Phi lepton"        : phi_l1,
+            "Phi antilepton"    : phi_l2,
             "Pt W"               : pt_w,
             "Pt H"               : pt_h,
             "Eta W"              : eta_w,
             "Eta H"              : eta_h,
             "Phi W"              : phi_w,
             "Phi H"              : phi_h,
-            "Massa invariante WH": M_wh,
+            "WH invariant mass": M_wh,
             "Pt balance"         : pt_b_w,
             "cos(θ*)"            : cos_star,
             "cos(θ1)"            : cos_1,

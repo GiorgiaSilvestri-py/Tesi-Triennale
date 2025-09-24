@@ -82,27 +82,34 @@ def main () :
     - applico il boost anche al bosone di Higgs -> ottengo il quadrimomento di h nel SDR della Z
     - a questo punto, calcolo l'angolo, tramite compute_angle, con p1 = p_leptone e p2 = p_Higgs
     '''
-    
+    apply_smearing = True
     #longitudinale
     LHE_L = "unweighted_events_L.lhe"
     eventsL_dict = read_file(LHE_L)
     
+    print("---- BUILDING DICTIONARIES ----")
+    
     #costruzione quadrimomenti
-    W_fm_L = get_fm_of([24, -24], eventsL_dict)                                 #W
-    Z_fm_L = get_fm_of([23], eventsL_dict)                                      #Z    
-    H_fm_L = get_fm_of([25], eventsL_dict)                                      #H
-    lep_ZL, antilep_ZL, _, _ = connect_lep_to_V(eventsL_dict)                    #dizionari di leptoni e antileptoni da Z/W
-    l_lep_w, l_al_w = connect_alllep_to_V(eventsL_dict)[2:]
+    W_fm_L = get_fm_of([24, -24], eventsL_dict, apply_smearing = apply_smearing)                                 #W
+    Z_fm_L = get_fm_of([23], eventsL_dict, apply_smearing = apply_smearing)                                      #Z    
+    H_fm_L = get_fm_of([25], eventsL_dict, apply_smearing = apply_smearing)                                      #H
+    lep_ZL, antilep_ZL, l_lep_w, l_al_w = build_decay_products(eventsL_dict, apply_smearing = apply_smearing)  
+    
+    #print(H_fm_L.keys())
+    
+    #_, _, l_lep_w, l_al_w = connect_alllep_to_V(eventsL_dict)
     
     #trasversale
     LHE_T = "unweighted_events_T.lhe"
     eventsT_dict = read_file(LHE_T)
     
-    W_fm_T = get_fm_of([24, -24], eventsT_dict)                                 #W
-    Z_fm_T = get_fm_of([23], eventsT_dict)                                      #Z
-    H_fm_T = get_fm_of([25], eventsT_dict)                                      #H
-    lep_ZT,  antilep_ZT, _, _ = connect_lep_to_V(eventsT_dict)                  #lep/antilep
-    t_lep_w, t_al_w = connect_alllep_to_V(eventsT_dict)[2:]
+    W_fm_T = get_fm_of([24, -24], eventsT_dict, apply_smearing = apply_smearing)                                 #W
+    Z_fm_T = get_fm_of([23], eventsT_dict, apply_smearing = apply_smearing)                                      #Z
+    H_fm_T = get_fm_of([25], eventsT_dict, apply_smearing = apply_smearing)                                      #H
+    lep_ZT, antilep_ZT, t_lep_w, t_al_w = build_decay_products(eventsT_dict, apply_smearing = apply_smearing)
+    
+    ##print(len(t_lep_w), len(t_al_w))
+    print("---- COMPUTING VARIABLES ----")
     
     #liste di cos(theta)
     Z_cos_list_L = get_theta1_of(Z_fm_L, lep_ZL, antilep_ZL, H_fm_L)
@@ -112,17 +119,7 @@ def main () :
     
     
     #visualizzazione distribuzioni
-
-    data = Z_cos_list_L
-    iqr = np.percentile(data, 75) - np.percentile(data, 25)
-    bin_width = 2 * iqr / (len(data) ** (1/3))
-    nBins = int((max(data) - min(data)) / bin_width)
-    
-    data = W_cos_list_L
-    iqr = np.percentile(data, 75) - np.percentile(data, 25)
-    bin_width = 2 * iqr / (len(data) ** (1/3))
-    nbins = int((max(data) - min(data)) / bin_width)
-
+    print("---- BUILDING HISTOGRAMS ----")
 
     sb.set(style="whitegrid")
     fig, ax = plt.subplots(1, 2, figsize=(16, 5))
@@ -135,8 +132,8 @@ def main () :
     ax[0].set_title("Distribuzione angolo θ1 (Z)")
     ax[0].legend()
     
-    sb.histplot(W_cos_list_L, bins=nbins, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[1], label='Polarizzazione longitudinale',  alpha = 0.8)
-    sb.histplot(W_cos_list_T, bins=nbins, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5,  alpha = 0.4,
+    sb.histplot(W_cos_list_L, bins=40, color='royalblue', edgecolor = 'steelblue', stat='density', ax=ax[1], label='Polarizzazione longitudinale',  alpha = 0.8)
+    sb.histplot(W_cos_list_T, bins=40, color='firebrick', stat='density', edgecolor = 'firebrick', element='step', linewidth=1.5,  alpha = 0.4,
              ax=ax[1], label='Polarizzazione trasversale')
     ax[1].set_xlabel("cosθ1 (rad)")
     ax[1].set_ylabel("dN/N")
