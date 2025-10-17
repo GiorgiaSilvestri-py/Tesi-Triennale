@@ -372,30 +372,19 @@ def get_fm_of(p_id, events_dict, apply_smearing = False):
                         non_smeared_momentum1_bis = cinematic.build_fm()
                         smeared_momentum = apply_smearing_to(non_smeared_momentum1, "photon")
                         fm_vec_1 = smeared_momentum
-                        print(non_smeared_momentum1_bis)
-                   
-
+                        
                         break
-
-                print("break", non_smeared_momentum1_bis)
 
                 for cinematic in particles_list: 
                     if cinematic.pid == 22:
                         non_smeared_momentum2 = cinematic.build_fm()
-                        print(non_smeared_momentum1_bis)
                         if vector_is_equal(non_smeared_momentum1_bis, non_smeared_momentum2, 0.1):
-                            print("qui")
                             continue
 
                         smeared_momentum = apply_smearing_to(non_smeared_momentum2, "photon")
                         fm_vec_2 = smeared_momentum
-
-                        print(non_smeared_momentum1, non_smeared_momentum2)
                     
                 fm_dict[event_id] = fm_vec_1 + fm_vec_2
-
-                if event_id > 0:
-                    break
                         
     else:
         if set(p_id) == set([11, 13, 15]):
