@@ -4,7 +4,7 @@ import numpy as np
 import vector
 import seaborn as sb
 from scipy.stats import wasserstein_distance, ks_2samp
-from utils import *
+from utils_nonlhe import *
 
 def get_theta1(events_dict):
 
@@ -72,16 +72,7 @@ def main () :
     '''
     Confronta le distribuzioni dell'angolo theta 1, definito come l'angolo tra il leptone e la direzione di volo dell'Higgs
     '''
-    '''
-    Procedimento:
-    - SDR comovente con la Z
-	    - trovo il quadrimomento della Z da quello dei suoi prodotti di decadimento
-	    - calcolo beta come px/E, py/E etc con px, py, pz momento della Z
-	    - fatto ciò, applico il boost (con -beta) al leptone
-	    - ho ottenuto ora il quadrimomento dei due leptoni e il quadrimomento somma nel SDR della Z
-    - applico il boost anche al bosone di Higgs -> ottengo il quadrimomento di h nel SDR della Z
-    - a questo punto, calcolo l'angolo, tramite compute_angle, con p1 = p_leptone e p2 = p_Higgs
-    '''
+
     apply_smearing = True
     #longitudinale
     LHE_L = "unweighted_events_L.lhe"
@@ -145,4 +136,4 @@ def main () :
 
   
 if __name__ == '__main__' :
-    main() 
+    main()

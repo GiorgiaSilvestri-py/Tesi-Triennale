@@ -4,16 +4,18 @@ import numpy as np
 import vector
 import seaborn as sb
 from scipy.stats import wasserstein_distance, ks_2samp
-from utils import *
+from utils_lhe import *
 import sys
 
             
 def main():
+
     '''
     Confronto tramite pt_h, eta_h, e massa invariante VH
     '''
     apply_smearing = False
     print("---- BUILDING DICTIONARIES ----")
+
     #analisi polarizzazione longitudinale
     LHE_L = "unweighted_events_L.lhe"
     events_H_L = read_file(LHE_L)
@@ -103,7 +105,7 @@ def main():
     print(f"Kolmogorov-Smirnov stat: {k_s_w.statistic:.3f}, p-value: {k_s_w.pvalue:.3f}")
     print(f"Valore di eta per cui si ha massima differenza: {eta_max:0f}")
     
-    
+    #----------------------------------------------------------------------------------------
     
     #confronto massa invariante 
     

@@ -228,9 +228,6 @@ def main():
         
     #other variables
     fm_pz_list_l, fm_pt_list_l = [], []
-    decay_angle_list, decay_angle_list_built = [], []
-    decay_cos_list, decay_cos_list_built = [], []
-    pz_diff, pz_diff_built_angle_l = [], []
     pt_w_l = []
     
     R_l_angle = []
@@ -243,12 +240,11 @@ def main():
         
         fm_pz_list_l.append(abs(fm_l.pz))
         fm_pt_list_l.append(abs(np.sqrt(fm_l.px**2 + fm_l.py**2)))
-        pz_diff.append(abs(fm_n.pz - fm_l.pz))
-        pz_diff_built_angle_l.append(abs(fm_n_built.pz - fm_l.pz))
         pt_w_l.append(abs(np.sqrt(fm_w.px**2 + fm_w.py**2)))
         
         R_l_angle.append(fm_n_built.pz / fm_n.pz)
-        
+
+    #----------------------------------------------------------------------------   
     
     #ii method - pz difference
     
@@ -286,7 +282,6 @@ def main():
                        
    
     #other variables
-    pz_diff, pz_diff_built = [], []
     fm_pt_list_l = []
     R_l_diff = []
     pt_h, pz_h = [], []
@@ -299,9 +294,6 @@ def main():
         fm_n_built = vec_built[e_id]
         fm_l = vec_lepton[e_id]
                 
-        pz_diff.append(abs(fm_n.pz - fm_l.pz))
-        pz_diff_built.append(abs(fm_n_built.pz - fm_l.pz))
-        
         fm_pt_list_l.append(abs(np.sqrt(fm_l.px**2 + fm_l.py**2)))
         
         eta_lep.append(fm_l.eta)
@@ -341,7 +333,7 @@ def main():
     
     #------------------------------------------------------------------------------------------------------------------------------------
     
-    #HISTO1D
+    #HISTO1D - pz lepton
     
     h1 = ROOT.TProfile("Profile 1", "Minimum Angle",
                            40, 0, 1400,
@@ -392,7 +384,7 @@ def main():
     
     #------------------------------------------------------------------------------------------------------------------------------------
     
-    #HISTO1D
+    #HISTO1D - pt lepton
     
     h1 = ROOT.TProfile("Profile 1", "Minimum Angle",
                            40, 0, 400,
@@ -439,8 +431,10 @@ def main():
 
     canvas.SaveAs("ptlepton_profile1d.png")
 
+    #------------------------------------------------------------------------------
 
-    #HISTO1D
+
+    #HISTO1D - eta lepton
     
     h1 = ROOT.TProfile("Profile 1", "Minimum Angle",
                            40, -6, 6,
@@ -476,10 +470,10 @@ def main():
     canvas.cd(1)
     h1.Draw("COLZ")
     
-    h1.GetXaxis().SetTitle("eta lepton (rad)")
+    h1.GetXaxis().SetTitle("eta lepton")
     h1.GetYaxis().SetTitle("Ratio")
     
-    h2.GetXaxis().SetTitle("eta lepton (rad)")
+    h2.GetXaxis().SetTitle("eta lepton")
     h2.GetYaxis().SetTitle("Ratio")
 
     canvas.cd(2)
@@ -488,10 +482,10 @@ def main():
     canvas.SaveAs("etalepton_profile1d.png")
 
 
-    
     #------------------------------------------------------------------------------------------------------------
     
-    #PROFILE3D
+
+    #PROFILE3D; pz, pt & eta lepton
         
     
     h1 = ROOT.TProfile3D("Profile 1", "Minimum Angle",
@@ -541,11 +535,11 @@ def main():
     
     h1.GetXaxis().SetTitle("pz lepton (GeV)")
     h1.GetZaxis().SetTitle("pt lepton (GeV)")
-    h1.GetYaxis().SetTitle("eta lepton (rad)")
+    h1.GetYaxis().SetTitle("eta lepton")
     
     h2.GetXaxis().SetTitle("pz lepton (GeV)")
     h2.GetZaxis().SetTitle("pt lepton (GeV)")
-    h2.GetYaxis().SetTitle("eta lepton (rad)")
+    h2.GetYaxis().SetTitle("eta lepton")
     
     canvas.cd(2)
     h2.Draw("COLZ")
@@ -589,8 +583,6 @@ def main():
         y_bins = 25
         xmin = np.min(a_list1)
         xmax = np.max(a_list1)
-        
-        
         
         for (a_list2, var2) in zip(array_list, var_name):
             if var1 == var2:
@@ -636,8 +628,7 @@ def main():
             ROOT.gStyle.SetNumberContours(255)
             
             ROOT.gStyle.SetOptStat(0)
-            #ROOT.gStyle.SetPalette(ROOT.kDarkBodyRadiator)
-
+           
             canvas = ROOT.TCanvas("canvas", "Confronto Profile2D", 1800, 1000)
             canvas.Divide(2, 1)
 
@@ -679,7 +670,6 @@ def main():
     R_array_angle = np.array(R_l_angle)
     R_array_diff  = np.array(R_l_diff)
     
-    print([attr for attr in dir(ROOT) if attr.startswith("k")])
     
     h1 = ROOT.TProfile2D("Profile 1", "Minimum Angle",
                            20, 0, 1400,
@@ -766,7 +756,7 @@ def main():
 
     #--------------------------------------------------------------------------------------------------------------------
 
-    #eta lepton & pz lepton
+    #eta lepton & pz lepton - root
 
     h1 = ROOT.TProfile2D("Profile 1", "Minimum Angle",
                            25, 0, 1400,
@@ -783,7 +773,6 @@ def main():
         h2.Fill(xi, yi, zi)
         
     ROOT.gStyle.SetOptStat(0)
-    #ROOT.gStyle.SetPalette(ROOT.kDarkBodyRadiator)
 
     canvas = ROOT.TCanvas("canvas", "Confronto Profile2D", 1600, 1000)
     canvas.Divide(2, 1)
@@ -811,7 +800,6 @@ def main():
 
     x_filtered = fm_pz_array[mask]
     y_filtered = fm_pt_array[mask]
-    #y_filtered = fm_pt_w_array[mask]
     z_filtered_1 = R_array_angle[mask]
     z_filtered_2 = R_array_diff[mask]
 
@@ -866,7 +854,6 @@ def main():
     plt.colorbar()
     plt.xlabel('Pz lepton (GeV)', fontsize = 15)
     plt.ylabel('Pt lepton (GeV)', fontsize = 15)
-    #plt.ylabel('Pt W (GeV)', fontsize = 15)
     plt.title('Minimum Angle', fontsize = 15)
 
 
@@ -875,7 +862,6 @@ def main():
     plt.colorbar()
     plt.xlabel('Pz lepton (GeV)', fontsize = 15)
     plt.ylabel('Pt lepton (GeV)', fontsize = 15)
-    #plt.ylabel('Pt W (GeV)', fontsize = 15)
     plt.title('Pz difference', fontsize = 15)
 
     plt.tight_layout()
@@ -991,7 +977,6 @@ def main():
             plt.tight_layout()
             plt.savefig(filename, dpi=300)
             plt.show()
-    
     
 if __name__ == '__main__':
     main()  

@@ -32,8 +32,6 @@ def main():
     pt_w_t = get_pt_of([24, -24], events_t, apply_smearing = apply_smearing)
     
     eta_z_l = get_eta_of([23], events_l, apply_smearing = apply_smearing)
-    #print(len(eta_z_l))
-    # print(len(ta_z_l))
     eta_w_l = get_eta_of([24, -24], events_l, apply_smearing = apply_smearing)
     eta_z_t = get_eta_of([23], events_t, apply_smearing = apply_smearing)
     eta_w_t = get_eta_of([24, -24], events_t, apply_smearing = apply_smearing)
