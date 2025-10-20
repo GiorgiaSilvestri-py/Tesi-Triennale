@@ -72,28 +72,6 @@ def print_dict(events_dict):
 def is_nonzero(v):
     return v.px != 0 or v.py != 0 or v.pz != 0 or v.E != 0
     
-'''   
-def apply_smearing_to(fm_vector, is_neutrino = False):
-
-    #neutrinos
-    if is_neutrino:
-        resolution = 0.20
-        rand_smearing = random.gauss(mu = 1.0, sigma = resolution)
-        px_new = fm_vector.px * rand_smearing
-        py_new = fm_vector.py * rand_smearing
-        pz_new = fm_vector.pz * rand_smearing
-        E_new = fm_vector.E * rand_smearing
-        smeared_vector = vector.obj( px = px_new, py = py_new, pz = py_new, E = E_new )
-    
-    else:
-        #leptons
-        resolution = 0.01
-        rand_smearing = random.gauss(mu = 1.0, sigma = resolution)
-        smeared_vector = vector.obj( px = (fm_vector.px * rand_smearing), py = (fm_vector.py * rand_smearing), pz = (fm_vector.pz * rand_smearing), E =  (fm_vector.E * rand_smearing) ) 
-    
-    
-    return smeared_vector
-'''
 
 def compute_jet_resolution(energy):
     a0 = 5.43376
@@ -251,6 +229,8 @@ def compute_neutrino_momentum_from_particles(vec_lepton, vec_neutrino_expected):
     return built_neutrino_vector
 
 
+
+
 def vector_is_equal(vec1, vec2, tollerance):
 
     return abs(vec1.x - vec2.x) < tollerance and abs(vec1.y - vec2.y) < tollerance and abs(vec1.z - vec2.z) < tollerance
@@ -270,57 +250,57 @@ def get_fm_of(p_id, events_dict, apply_smearing = False):
     
     if apply_smearing:
         if set(p_id) == set([11, 13, 15]):
-            for event_id, particles_dict in events_dict.items():
-                for pid, cinematic in particles_dict.items():
-                    if pid in p_id:
+            for event_id, particles_list in events_dict.items():
+                for cinematic in particles_list:
+                    if cinematic.pid in p_id:
                         non_smeared_momentum = cinematic.build_fm()
                         smeared_momentum = apply_smearing_to(non_smeared_momentum, "lepton")
                         fm_dict[event_id] = smeared_momentum
                         
         if set(p_id) == set([-11, -13, -15]):
-            for event_id, particles_dict in events_dict.items():
-                for pid, cinematic in particles_dict.items():
-                    if pid in p_id:
+            for event_id, particles_list in events_dict.items():
+                for cinematic in particles_list:
+                    if cinematic.pid in p_id:
                         non_smeared_momentum = cinematic.build_fm()
                         smeared_momentum = apply_smearing_to(non_smeared_momentum, "lepton")
                         fm_dict[event_id] = smeared_momentum
         
         
         if set(p_id) == set([11, 12, 13, 14, 15, 16]):
-            for event_id, particles_dict in events_dict.items():
-                for pid, cinematic in particles_dict.items():
-                    if pid in [11, 13, 15]:
+            for event_id, particles_list in events_dict.items():
+                for cinematic in particles_list:
+                    if cinematic.pid in [11, 13, 15]:
                         non_smeared_momentum = cinematic.build_fm()
                         smeared_momentum = apply_smearing_to(non_smeared_momentum, "lepton")
                         fm_dict[event_id] = smeared_momentum
-                    if pid in [12, 14, 16]:
+                    if cinematic.pid in [12, 14, 16]:
                         non_smeared_momentum = compute_neutrino_momentum(events_dict, event_id)
                         smeared_momentum = apply_smearing_to(non_smeared_momentum, "neutrino")
                         fm_dict[event_id] = smeared_momentum
                         
         if set(p_id) == set([-11, -12, -13, -14, -15, -16]):
-            for event_id, particles_dict in events_dict.items():
-                for pid, cinematic in particles_dict.items():
-                    if pid in [-11, -13, -15]:
+            for event_id, particles_list in events_dict.items():
+                for cinematic in particles_list:
+                    if cinematic.pid in [-11, -13, -15]:
                         non_smeared_momentum = cinematic.build_fm()
                         smeared_momentum = apply_smearing_to(non_smeared_momentum, "lepton")
                         fm_dict[event_id] = smeared_momentum
-                    if pid in [-12, -14, -16]:
+                    if cinematic.pid in [-12, -14, -16]:
                         non_smeared_momentum = compute_neutrino_momentum(events_dict, event_id)
                         smeared_momentum = apply_smearing_to(non_smeared_momentum, "neutrino")
                         fm_dict[event_id] = smeared_momentum
                    
         if p_id == [23]:
-            for event_id, particles_dict in events_dict.items():
+            for event_id, particles_list in events_dict.items():
                 fm_vec_1 = vector.obj(px = 0, py = 0, pz = 0, E = 0)
                 fm_vec_2 = vector.obj(px = 0, py = 0, pz = 0, E = 0)
                 
-                for pid, cinematic in particles_dict.items():
-                    if (pid) in [11, 13, 15]:
+                for cinematic in particles_list:
+                    if (cinematic.pid) in [11, 13, 15]:
                         non_smeared_momentum = cinematic.build_fm()
                         smeared_momentum = apply_smearing_to(non_smeared_momentum, "lepton")
                         fm_vec_1 = smeared_momentum
-                    if (pid) in [-11, -13, -15]:
+                    if (cinematic.pid) in [-11, -13, -15]:
                         non_smeared_momentum = cinematic.build_fm()
                         smeared_momentum = apply_smearing_to(non_smeared_momentum, "lepton")
                         fm_vec_2 = smeared_momentum
@@ -330,8 +310,8 @@ def get_fm_of(p_id, events_dict, apply_smearing = False):
                 fm_dict[event_id] = fm_vec_1 + fm_vec_2
                 
         if set(p_id) == set([24, -24]):
-            for event_id, particles_dict in events_dict.items():
-                event_type = f_event_type(particles_dict)
+            for event_id, particles_list in events_dict.items():
+                event_type = f_event_type(particles_list)
                 
                 #24 = W; 23 = Z
                 if event_type == 23:
@@ -340,14 +320,14 @@ def get_fm_of(p_id, events_dict, apply_smearing = False):
                 fm_vec_1 = vector.obj(px = 0, py = 0, pz = 0, E = 0)
                 fm_vec_2 = vector.obj(px = 0, py = 0, pz = 0, E = 0)
                 
-                for pid, cinematic in particles_dict.items():
-                    if abs(pid) in [11, 13, 15]:
+                for cinematic in particles_list:
+                    if abs(cinematic.pid) in [11, 13, 15]:
                         non_smeared_momentum = cinematic.build_fm()
                         smeared_momentum = apply_smearing_to(non_smeared_momentum, "lepton")
                         fm_vec_1 = smeared_momentum
                         
-                for pid, cinematic in particles_dict.items():
-                    if abs(pid) in [12, 14, 16]:
+                for cinematic in particles_list:
+                    if abs(cinematic.pid) in [12, 14, 16]:
                         non_smeared_momentum = cinematic.build_fm()
                         smeared_momentum = apply_smearing_to(non_smeared_momentum, "neutrino")
                         fm_vec_2 = compute_neutrino_momentum_from_particles(fm_vec_1, smeared_momentum)
@@ -363,7 +343,7 @@ def get_fm_of(p_id, events_dict, apply_smearing = False):
                 fm_vec_1 = vector.obj(px = 0, py = 0, pz = 0, E = 0)
                 fm_vec_2 = vector.obj(px = 0, py = 0, pz = 0, E = 0)
                 
-                print(particles_list)
+                
                 #for pid, cinematic in particles_dict.items():
                 for cinematic in particles_list: 
                     
@@ -372,52 +352,57 @@ def get_fm_of(p_id, events_dict, apply_smearing = False):
                         non_smeared_momentum1_bis = cinematic.build_fm()
                         smeared_momentum = apply_smearing_to(non_smeared_momentum1, "photon")
                         fm_vec_1 = smeared_momentum
-                        
+                
                         break
 
                 for cinematic in particles_list: 
                     if cinematic.pid == 22:
                         non_smeared_momentum2 = cinematic.build_fm()
+                        
                         if vector_is_equal(non_smeared_momentum1_bis, non_smeared_momentum2, 0.1):
+                            
                             continue
 
                         smeared_momentum = apply_smearing_to(non_smeared_momentum2, "photon")
                         fm_vec_2 = smeared_momentum
+
                     
                 fm_dict[event_id] = fm_vec_1 + fm_vec_2
+
+                
                         
     else:
         if set(p_id) == set([11, 13, 15]):
-            for event_id, particles_dict in events_dict.items():
-                for pid, cinematic in particles_dict.items():
+            for event_id, particles_list in events_dict.items():
+                for cinematic in particles_list:
                     if pid in p_id:
                         fm_dict[event_id] = cinematic.build_fm()
                         
         if set(p_id) == set([-11, -13, -15]):
-            for event_id, particles_dict in events_dict.items():
-                for pid, cinematic in particles_dict.items():
+            for event_id, particles_list in events_dict.items():
+                for cinematic in particles_list:
                     if pid in p_id:
                         fm_dict[event_id] = cinematic.build_fm()
                         
         if set(p_id) == set([11, 12, 13, 14, 15, 16]):
-            for event_id, particles_dict in events_dict.items():
-                for pid, cinematic in particles_dict.items():
-                    if pid in [11, 13, 15]:
+            for event_id, particles_list in events_dict.items():
+                for cinematic in particles_list:
+                    if cinematic.pid in [11, 13, 15]:
                         fm_dict[event_id] = cinematic.build_fm()
-                    if pid in [12, 14, 16]:
+                    if cinematic.pid in [12, 14, 16]:
                         fm_dict[event_id] = compute_neutrino_momentum(events_dict, event_id)
                         
         if set(p_id) == set([-11, -12, -13, -14, -15, -16]):
-            for event_id, particles_dict in events_dict.items():
-                for pid, cinematic in particles_dict.items():
-                    if pid in [-11, -13, -15]:
+            for event_id, particles_list in events_dict.items():
+                for cinematic in particles_list:
+                    if cinematic.pid in [-11, -13, -15]:
                         fm_dict[event_id] = cinematic.build_fm()
-                    if pid in [-12, -14, -16]:
+                    if cinematic.pid in [-12, -14, -16]:
                         fm_dict[event_id] = compute_neutrino_momentum(events_dict, event_id)
          
         if p_id == [23]:
-            for event_id, particles_dict in events_dict.items():
-                event_type = f_event_type(particles_dict)
+            for event_id, particles_list in events_dict.items():
+                event_type = f_event_type(particles_list)
                 
                 #24 = W; 23 = Z
                 if event_type == 24 or event_type == -24:
@@ -425,11 +410,11 @@ def get_fm_of(p_id, events_dict, apply_smearing = False):
                     
                 fm_vec_1 = vector.obj(px = 0, py = 0, pz = 0, E = 0)
                 fm_vec_2 = vector.obj(px = 0, py = 0, pz = 0, E = 0)
-                
-                for pid, cinematic in particles_dict.items():
-                    if (pid) in [11, 13, 15]:
+
+                for cinematic in particles_list:
+                    if (cinematic.pid) in [11, 13, 15]:
                         fm_vec_1 = cinematic.build_fm()
-                    if (pid) in [-11, -13, -15]:
+                    if (cinematic.pid) in [-11, -13, -15]:
                         fm_vec_2 = vector.obj(px = cinematic.px, py = cinematic.py, pz = cinematic.pz, E = cinematic.E)
                            
                 if not is_nonzero(fm_vec_1) or not is_nonzero(fm_vec_2):
@@ -437,8 +422,8 @@ def get_fm_of(p_id, events_dict, apply_smearing = False):
                 fm_dict[event_id] = fm_vec_1 + fm_vec_2
                 
         if set(p_id) == set([24, -24]):
-            for event_id, particles_dict in events_dict.items():
-                event_type = f_event_type(particles_dict)
+            for event_id, particles_list in events_dict.items():
+                event_type = f_event_type(particles_list)
                 
                 #24 = W; 23 = Z
                 if event_type == 23:
@@ -446,93 +431,125 @@ def get_fm_of(p_id, events_dict, apply_smearing = False):
                 fm_vec_1 = vector.obj(px = 0, py = 0, pz = 0, E = 0)
                 fm_vec_2 = vector.obj(px = 0, py = 0, pz = 0, E = 0)
                 
-                for pid, cinematic in particles_dict.items():
-                    if abs(pid) in [11, 13, 15]:
+                for cinematic in particles_list:
+                    if abs(cinematic.pid) in [11, 13, 15]:
                         fm_vec_1 = cinematic.build_fm()
                        
-                    if abs(pid) in [12, 14, 16]:
+                    if abs(cinematic.pid) in [12, 14, 16]:
                         fm_vec_2 = compute_neutrino_momentum(events_dict, event_id)
                         
                 if not is_nonzero(fm_vec_1) or not is_nonzero(fm_vec_2):
-                    print("WARNING")                                                    # salta l’evento se manca uno dei due
+                    print("WARNING")
+                    continue                                                   # salta l’evento se manca uno dei due
                 fm_dict[event_id] = fm_vec_1 + fm_vec_2
                 
                 
         if set(p_id) == set([25]):
-            for event_id, particles_dict in events_dict.items():
+            for event_id, particles_list in events_dict.items():
+                
+                #photon__list = []
                 fm_vec_1 = vector.obj(px = 0, py = 0, pz = 0, E = 0)
                 fm_vec_2 = vector.obj(px = 0, py = 0, pz = 0, E = 0)
-            
-                for pid, cinematic in particles_dict.items():
-                    if pid == 22:
+                
+                
+                #for pid, cinematic in particles_dict.items():
+                for cinematic in particles_list: 
+                    
+                    if cinematic.pid == 22:
                         fm_vec_1 = cinematic.build_fm()
                         
-                for pid, cinematic in particles_dict.items():
-                    if pid == 22:
+                        break
+
+                for cinematic in particles_list: 
+                    if cinematic.pid == 22:
                         fm_vec_2 = cinematic.build_fm()
                         
+                        if vector_is_equal(fm_vec_1, fm_vec_2, 0.1):
+                            fm_vec_2 = vector.obj(px = 0, py = 0, pz = 0, E = 0)
+                            continue
+                    
                 fm_dict[event_id] = fm_vec_1 + fm_vec_2
 
     return fm_dict
 
 
-#da modificare
 def apply_selections(events_dict):
 
     selected_events = [] #list of event id that pass selections
     
-    for e_id, part_dict in events_dict.items():
+    for e_id, particle_list in events_dict.items():
         
-        event_type = f_event_type(part_dict)
+        event_type = f_event_type(particle_list)
 
-        e_vec = vector.obj(x = 0, y = 0, z = 0, E = 0)
-        mu_vec = vector.obj(x = 0, y = 0, z = 0, E = 0)
-             
+          
         #di-lepton
         if event_type == 23:
-                
-            photon__list = []
 
-            for pid, cinematic in part_dict.items():
+            e_vec = vector.obj(x = 0, y = 0, z = 0, E = 0)
+            mu_vec = vector.obj(x = 0, y = 0, z = 0, E = 0)
+            gamma1_fm = vector.obj(x = 0, y = 0, z = 0, E = 0)
+            gamma2_fm = vector.obj(x = 0, y = 0, z = 0, E = 0)
+            
 
-                #photons
-                
+            for cinematic in particle_list:
 
-                if pid == 22:
-                    non_smeared_momentum = cinematic.build_fm()
-                    smeared_momentum = apply_smearing_to(non_smeared_momentum, "photon")
-                    photon__list.append(smeared_momentum)
+                #leptons
 
-                if abs(pid) == 11:
+                if abs(cinematic.pid) == 11:
                     non_smeared_momentum = cinematic.build_fm()
                     smeared_momentum = apply_smearing_to(non_smeared_momentum, "lepton")
                     e_vec = smeared_momentum
+                    #print("e vec:", e_vec)
 
-                if  abs(pid) == 13:
+                if  abs(cinematic.pid) == 13:
                     non_smeared_momentum = cinematic.build_fm()
                     smeared_momentum = apply_smearing_to(non_smeared_momentum, "lepton")
                     mu_vec = smeared_momentum
+                    #print("mu vec:", mu_vec)
+
+            for cinematic in particle_list: 
+                    
+                if cinematic.pid == 22:
+                    non_smeared_momentum1 = cinematic.build_fm()
+                    non_smeared_momentum1_bis = cinematic.build_fm()
+                    smeared_momentum = apply_smearing_to(non_smeared_momentum1, "photon")
+                    gamma1_fm = smeared_momentum
+                    #print("gamma 1 vec:", gamma1_fm)
+                    break
+
+            for cinematic in particle_list: 
+
+                if cinematic.pid == 22:
+                    non_smeared_momentum2 = cinematic.build_fm()
+                    
+                    if vector_is_equal(non_smeared_momentum1_bis, non_smeared_momentum2, 0.1):
+                        
+                        continue
+
+                    smeared_momentum = apply_smearing_to(non_smeared_momentum2, "photon")
+                    gamma2_fm = smeared_momentum
+                    #print("gamma 2 vec:", gamma2_fm)
+
 
 
             #selections
 
             #leading / subleading photons pt
 
-            gamma1_fm = photon__list[0]
-            gamma2_fm = photon__list[1]
-
             sum_fm = gamma1_fm + gamma2_fm
 
             m_gg = sum_fm.M
+            #print(m_gg)
 
             pt_gamma1 = np.sqrt(gamma1_fm.px**2 + gamma1_fm.py**2)
+            #print("pt gamma1", pt_gamma1)
             pt_gamma2 = np.sqrt(gamma2_fm.px**2 + gamma2_fm.py**2)
+            #print("pt gamma2", pt_gamma2)
 
             leading_threshold = 3*m_gg / 8
+            #print("leading threshold:", leading_threshold)
             subleading_threshold = m_gg / 4
-
-                
-
+            #print("subleading threshold:", subleading_threshold)
 
             #leptons
 
@@ -549,11 +566,21 @@ def apply_selections(events_dict):
 
 
                 if pt_gamma1 > pt_gamma2:
-                    if pt_gamma1 > leading_threshold and pt_gamma2 > subleading_threshold and  R_gamma1_e > 1.0 and R_gamma2_e > 1.0:
+                    if pt_gamma1 > leading_threshold and \
+                       pt_gamma2 > subleading_threshold and \
+                       R_gamma1_e > 1.0 and \
+                       R_gamma2_e > 1.0:
+                        #print(pt_gamma1, pt_gamma2, R_gamma1_e, R_gamma2_e)
+                        #print("added event number", e_id)
                         selected_events.append(e_id)
 
                 else:
-                    if pt_gamma2 > leading_threshold and pt_gamma1 > subleading_threshold and R_gamma1_e > 1.0 and R_gamma2_e > 1.0:
+                    if pt_gamma2 > leading_threshold and \
+                       pt_gamma1 > subleading_threshold and \
+                       R_gamma1_e > 1.0 and \
+                       R_gamma2_e > 1.0:
+                        #print(pt_gamma1, pt_gamma2, R_gamma1_e, R_gamma2_e)
+                        #print("added event number", e_id)
                         selected_events.append(e_id)
 
                 
@@ -570,55 +597,90 @@ def apply_selections(events_dict):
                 R_gamma1_mu = np.sqrt( (deltaeta_mu_gamma1)**2 + (deltaphi_mu_gamma1)**2 )
                 R_gamma2_mu = np.sqrt( (deltaeta_mu_gamma2)**2 + (deltaphi_mu_gamma2)**2 )
 
-                if R_gamma1_mu > 1.0 and R_gamma2_mu > 1.0:
-                    selected_events.append(e_id)
+                if pt_gamma1 > pt_gamma2:
+                    if pt_gamma1 > leading_threshold and \
+                       pt_gamma2 > subleading_threshold and \
+                       R_gamma1_mu > 0.5 and \
+                       R_gamma2_mu > 0.5:
+                        #print(pt_gamma1, pt_gamma2, R_gamma1_mu, R_gamma2_mu)
+                        #print("added event 2L number", e_id)
+                        selected_events.append(e_id)
+
+                else:
+                    if pt_gamma2 > leading_threshold and \
+                       pt_gamma1 > subleading_threshold and \
+                       R_gamma1_mu > 1.0 and \
+                       R_gamma2_mu > 1.0:
+                        #print(pt_gamma1, pt_gamma2, R_gamma1_mu, R_gamma2_mu)
+                        #print("added event 2L number", e_id)
+                        selected_events.append(e_id)
                 
 
 
         #single-lepton
         if event_type == 24 or event_type == -24:
 
-            photon__list = []
+            lepton_vec = vector.obj(x = 0, y = 0, z = 0, E = 0)
+            neutrino_vec = vector.obj(x = 0, y = 0, z = 0, E = 0)
+            gamma1_fm = vector.obj(x = 0, y = 0, z = 0, E = 0)
+            gamma2_fm = vector.obj(x = 0, y = 0, z = 0, E = 0)
+            
                         
-            #leptons & photons
-            for pid, cinematic in part_dict.items():
-
-
-                if pid == 22:
-                    non_smeared_momentum = cinematic.build_fm()
-                    smeared_momentum = apply_smearing_to(non_smeared_momentum, "photon")
-                    photon__list.append(smeared_momentum)
-
-                if abs(pid) in [11, 13, 15]:
+            #leptons & met
+            for cinematic in particle_list:
+                if abs(cinematic.pid) in [11, 13, 15]:
                     non_smeared_momentum = cinematic.build_fm()
                     smeared_momentum = apply_smearing_to(non_smeared_momentum, "lepton")
                     lepton_vec = smeared_momentum
 
-
-            #MET
-            for pid, cinematic in part_dict.items():
-                if abs(pid) in [12, 14, 16]:
+            for cinematic in particle_list:
+                if abs(cinematic.pid) in [12, 14, 16]:
                     non_smeared_momentum = cinematic.build_fm()
                     smeared_momentum = apply_smearing_to(non_smeared_momentum, "neutrino")
                     neutrino_vec = compute_neutrino_momentum_from_particles(lepton_vec, smeared_momentum)
 
+            #photons
+            for cinematic in particle_list: 
+                    
+                if cinematic.pid == 22:
+                    non_smeared_momentum1 = cinematic.build_fm()
+                    non_smeared_momentum1_bis = cinematic.build_fm()
+                    smeared_momentum = apply_smearing_to(non_smeared_momentum1, "photon")
+                    gamma1_fm = smeared_momentum
+                    #print("gamma 1 vec:", gamma1_fm)
+                    break
+
+            for cinematic in particle_list: 
+                
+                if cinematic.pid == 22:
+                    non_smeared_momentum2 = cinematic.build_fm()
+                    
+                    if vector_is_equal(non_smeared_momentum1_bis, non_smeared_momentum2, 0.1):
+                        
+                        continue
+
+                    smeared_momentum = apply_smearing_to(non_smeared_momentum2, "photon")
+                    gamma2_fm = smeared_momentum
+                    #print("gamma 2 vec:", gamma2_fm)
+
+                
                     
             #selections
-
-            gamma1_fm = photon__list[0]
-            gamma2_fm = photon__list[1]
-
             sum_fm = gamma1_fm + gamma2_fm
 
             m_gg = sum_fm.M
 
             pt_gamma1 = np.sqrt(gamma1_fm.px**2 + gamma1_fm.py**2)
+            #print("pt gamma 1 vec:", pt_gamma1)
             pt_gamma2 = np.sqrt(gamma2_fm.px**2 + gamma2_fm.py**2)
+            #print("pt gamma 2 vec:", pt_gamma2)
 
             leading_threshold = 3*m_gg / 8
+            #print("leading threshold:", leading_threshold))
             subleading_threshold = m_gg / 4
+            #print("subleading threshold:", subleading_threshold)
 
-            pt_MET = abs(neutrino_vec.px**2 + neutrino_vec.py**2)
+            pt_MET = np.sqrt(neutrino_vec.px**2 + neutrino_vec.py**2)
 
             deltaphi_lep_gamma1 = gamma1_fm.deltaphi(lepton_vec)
             deltaphi_lep_gamma2 = gamma2_fm.deltaphi(lepton_vec)
@@ -631,11 +693,15 @@ def apply_selections(events_dict):
 
 
             if pt_gamma1 > pt_gamma2:
-                if pt_gamma1 > leading_threshold and pt_gamma2 > subleading_threshold and  R_gamma1_e > 1.0 and R_gamma2_e > 1.0 and R_gamma1_lep > 1.0 and R_gamma2_lep > 1.0 and pt_MET > 45:
+                if pt_gamma1 > leading_threshold and pt_gamma2 > subleading_threshold and R_gamma1_lep > 1.0 and R_gamma2_lep > 1.0 and pt_MET > 45:
+                    #print(pt_gamma1, pt_gamma2, R_gamma1_lep, R_gamma2_lep, pt_MET)
+                    #print("added event 1L number", e_id)
                     selected_events.append(e_id)
 
             else:
-                if pt_gamma2 > leading_threshold and pt_gamma1 > subleading_threshold and R_gamma1_e > 1.0 and R_gamma2_e > 1.0 and R_gamma1_lep > 1.0 and R_gamma2_lep > 1.0 and pt_MET > 45:
+                if pt_gamma2 > leading_threshold and pt_gamma1 > subleading_threshold and R_gamma1_lep > 1.0 and R_gamma2_lep > 1.0 and pt_MET > 45:
+                    #print(pt_gamma1, pt_gamma2, R_gamma1_lep, R_gamma2_lep, pt_MET)
+                    #print("added event 1L number", e_id)
                     selected_events.append(e_id)
            
 
@@ -644,15 +710,15 @@ def apply_selections(events_dict):
             
 
     
-def f_event_type(particles_dict):
+def f_event_type(particles_list):
     
     event_type = 0  #24 = W; 23 = Z
-    for pid, cinematic in particles_dict.items():
-        if pid == 24:
+    for cinematic in particles_list:
+        if cinematic.pid == 24:
             event_type = 24
-        if pid == -24:
+        if cinematic.pid == -24:
             event_type = -24
-        elif pid == 23:
+        elif cinematic.pid == 23:
             event_type = 23
     return event_type
 
@@ -1446,73 +1512,99 @@ def sturges (N_events) :
     return ceil (1 + 3.322 * np.log (N_events))
 
 import ROOT
-def ROOT_hist1d(list1, list2, var, axis_name, nbins = None, xmin = None, xmax = None):
+def ROOT_hist1d(list1, list2, var, axis_name, nbins = None, xmin = None, xmax = None, ylim = None, xlim = None):
+
+    if type(list1) == dict:
+        list1 = list(list1.values())
     
-        if xmin is None:
-            xmin1 = min(list1)
-            xmin2 = min(list2)
-        if xmax is None:
-            xmax1 = max(list1)
-            xmax2 = max(list2)
+    if type(list2) == dict:
+        list2 = list(list2.values())
 
-        if nbins is None:
-            nbins1 =  sturges (len (list1))
-            nbins2 =  sturges (len (list2))
+    if xmin is None:
+        xmin1 = min(list1)
+        xmin2 = min(list2)
+    else:
+        xmin1 = xmin
+        xmin2 = xmin
+        
+    if xmax is None:
+        xmax1 = max(list1)
+        xmax2 = max(list2)
+    else:
+        xmax1 = xmax
+        xmax2 = xmax
 
-        hist1 = ROOT.TH1F("hist1", f"{var} distribution", nbins1, xmin1, xmax1)
-        hist2 = ROOT.TH1F("hist2", f"{var} distribution", nbins2, xmin2, xmax2)
-        
-        for value in list1:
-            hist1.Fill(value)
-        for value in list2:
-            hist2.Fill(value)
-            
-        #normalisation
-        if hist1.Integral() > 0:
-            hist1.Scale(1.0/hist1.Integral())
-        
-        if hist2.Integral() > 0:
-            hist2.Scale(1.0/hist2.Integral())
-            
-        steelblue  = ROOT.TColor.GetColor("#4682B4")  #steelblue
-        firebrick  = ROOT.TColor.GetColor("#B22222")  #firebrick
+    if nbins is None:
+        nbins1 =  sturges (len (list1))
+        nbins2 =  sturges (len (list2))
+    else:
+        nbins1, nbins2 = nbins
 
-        hist1.SetLineColor(steelblue)
-        hist2.SetLineColor(firebrick)
-        hist1.SetLineWidth(2)
-        hist2.SetLineWidth(2)
+    hist1 = ROOT.TH1F("hist1", f"{var} distribution", nbins1, xmin1, xmax1)
+    hist2 = ROOT.TH1F("hist2", f"{var} distribution", nbins2, xmin2, xmax2)
+    
+    for value in list1:
+        hist1.Fill(value)
+    for value in list2:
+        hist2.Fill(value)
         
-        hist1.SetLineColor(steelblue)
-        hist1.SetFillColor(steelblue)
-        hist1.SetFillStyle(3002)
+    #normalisation
+    if hist1.Integral() > 0:
+        hist1.Scale(1.0/hist1.Integral())
+    
+    if hist2.Integral() > 0:
+        hist2.Scale(1.0/hist2.Integral())
         
-        hist2.SetLineColor(firebrick)
-        hist2.SetFillColor(firebrick)
-        hist2.SetFillStyle(3002)
-        #hist1.GetXaxis().SetRangeUser(0, 600)
-        #hist1.GetXaxis().SetRangeUser(0, 600)
-        hist1.GetXaxis().SetTitle(f"{axis_name}")
-        hist1.GetYaxis().SetTitle("Event Fraction")
-        
-        ROOT.gROOT.SetBatch(True)
-        
-        canvas = ROOT.TCanvas("canvas", f"{var} distribution", 1600, 1200)
-        hist1.Draw("HIST")
-        hist2.Draw("HIST SAME")
-        
-        legend = ROOT.TLegend(0.6, 0.8, 0.89, 0.89)
-        legend.SetFillStyle(0)                
-        legend.SetTextFont(42)                
-        legend.SetTextSize(0.03)              
-        legend.AddEntry(hist1, "longitudinal polarisation", "f")
-        legend.AddEntry(hist2, "transverse polarisation", "f")
-        legend.Draw()
+    steelblue  = ROOT.TColor.GetColor("#4682B4")  #steelblue
+    firebrick  = ROOT.TColor.GetColor("#B22222")  #firebrick
 
-        canvas.SetFillColor(0)                
-        canvas.SetLeftMargin(0.12)
-        canvas.SetBottomMargin(0.08)
-        
-        ROOT.gStyle.SetOptStat(0)
-        
-        canvas.SaveAs(f"{var} distribution.png")
-        
+    hist1.SetLineColor(steelblue)
+    hist2.SetLineColor(firebrick)
+    hist1.SetLineWidth(2)
+    hist2.SetLineWidth(2)
+    
+    hist1.SetLineColor(steelblue)
+    hist1.SetFillColor(steelblue)
+    hist1.SetFillStyle(3002)
+    
+    hist2.SetLineColor(firebrick)
+    hist2.SetFillColor(firebrick)
+    hist2.SetFillStyle(3002)
+
+    if ylim is not None:
+        hist1.GetYaxis().SetRangeUser(0, ylim)
+        hist2.GetYaxis().SetRangeUser(0, ylim)
+
+    if xlim is not None:
+        if isinstance(xlim, tuple) and len(xlim) == 2:
+            xlim_m, xlim_M = xlim
+            hist1.GetXaxis().SetRangeUser(xlim_m, xlim_M)
+            hist2.GetXaxis().SetRangeUser(xlim_m, xlim_M)
+        else:
+            raise ValueError("xlim must be a two element tuple: (min, max)")
+
+
+    hist1.GetXaxis().SetTitle(f"{axis_name}")
+    hist1.GetYaxis().SetTitle("Event Fraction")
+    
+    ROOT.gROOT.SetBatch(True)
+    
+    canvas = ROOT.TCanvas("canvas", f"{var} distribution", 1600, 1200)
+    hist1.Draw("HIST")
+    hist2.Draw("HIST SAME")
+    
+    legend = ROOT.TLegend(0.6, 0.8, 0.89, 0.89)
+    legend.SetFillStyle(0)                
+    legend.SetTextFont(42)                
+    legend.SetTextSize(0.03)              
+    legend.AddEntry(hist1, "longitudinal polarisation", "f")
+    legend.AddEntry(hist2, "transverse polarisation", "f")
+    legend.Draw()
+
+    canvas.SetFillColor(0)                
+    canvas.SetLeftMargin(0.12)
+    canvas.SetBottomMargin(0.08)
+    
+    ROOT.gStyle.SetOptStat(0)
+    
+    canvas.SaveAs(f"{var} distribution.png")

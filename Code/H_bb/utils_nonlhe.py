@@ -1352,71 +1352,99 @@ def sturges (N_events) :
     return ceil (1 + 3.322 * np.log (N_events))
 
 import ROOT
-def ROOT_hist1d(list1, list2, var, axis_name, nbins = None, xmin = None, xmax = None):
+def ROOT_hist1d(list1, list2, var, axis_name, nbins = None, xmin = None, xmax = None, ylim = None, xlim = None):
+
+    if type(list1) == dict:
+        list1 = list(list1.values())
     
-        if xmin is None:
-            xmin = min(min(list1), min(list2))
-        if xmax is None:
-            xmax = max(max(list1), max(list2))
+    if type(list2) == dict:
+        list2 = list(list2.values())
 
-        if nbins is None:
-            nbins1 =  sturges (len (list1))
-            nbins2 =  sturges (len (list2))
+    if xmin is None:
+        xmin1 = min(list1)
+        xmin2 = min(list2)
+    else:
+        xmin1 = xmin
+        xmin2 = xmin
+        
+    if xmax is None:
+        xmax1 = max(list1)
+        xmax2 = max(list2)
+    else:
+        xmax1 = xmax
+        xmax2 = xmax
 
-        hist1 = ROOT.TH1F("hist1", f"{var} distribution", nbins1, xmin, xmax)
-        hist2 = ROOT.TH1F("hist2", f"{var} distribution", nbins2, xmin, xmax)
-        
-        for value in list1:
-            hist1.Fill(value)
-        for value in list2:
-            hist2.Fill(value)
-            
-        #normalisation
-        if hist1.Integral() > 0:
-            hist1.Scale(1.0/hist1.Integral())
-        
-        if hist2.Integral() > 0:
-            hist2.Scale(1.0/hist2.Integral())
-            
-        steelblue  = ROOT.TColor.GetColor("#4682B4")  #steelblue
-        firebrick  = ROOT.TColor.GetColor("#B22222")  #firebrick
+    if nbins is None:
+        nbins1 =  sturges (len (list1))
+        nbins2 =  sturges (len (list2))
+    else:
+        nbins1, nbins2 = nbins
 
-        hist1.SetLineColor(steelblue)
-        hist2.SetLineColor(firebrick)
-        hist1.SetLineWidth(2)
-        hist2.SetLineWidth(2)
+    hist1 = ROOT.TH1F("hist1", f"{var} distribution", nbins1, xmin1, xmax1)
+    hist2 = ROOT.TH1F("hist2", f"{var} distribution", nbins2, xmin2, xmax2)
+    
+    for value in list1:
+        hist1.Fill(value)
+    for value in list2:
+        hist2.Fill(value)
         
-        hist1.SetLineColor(steelblue)
-        hist1.SetFillColor(steelblue)
-        hist1.SetFillStyle(3002)
+    #normalisation
+    if hist1.Integral() > 0:
+        hist1.Scale(1.0/hist1.Integral())
+    
+    if hist2.Integral() > 0:
+        hist2.Scale(1.0/hist2.Integral())
         
-        hist2.SetLineColor(firebrick)
-        hist2.SetFillColor(firebrick)
-        hist2.SetFillStyle(3002)
-        #hist1.GetXaxis().SetRangeUser(0, 600)
-        #hist1.GetXaxis().SetRangeUser(0, 600)
-        hist1.GetXaxis().SetTitle(f"{axis_name}")
-        hist1.GetYaxis().SetTitle("Event Fraction")
-        
-        ROOT.gROOT.SetBatch(True)
-        
-        canvas = ROOT.TCanvas("canvas", f"{var} distribution", 1600, 1200)
-        hist1.Draw("HIST")
-        hist2.Draw("HIST SAME")
-        
-        legend = ROOT.TLegend(0.6, 0.8, 0.89, 0.89)
-        legend.SetFillStyle(0)                
-        legend.SetTextFont(42)                
-        legend.SetTextSize(0.03)              
-        legend.AddEntry(hist1, "longitudinal polarisation", "f")
-        legend.AddEntry(hist2, "transverse polarisation", "f")
-        legend.Draw()
+    steelblue  = ROOT.TColor.GetColor("#4682B4")  #steelblue
+    firebrick  = ROOT.TColor.GetColor("#B22222")  #firebrick
 
-        canvas.SetFillColor(0)                
-        canvas.SetLeftMargin(0.12)
-        canvas.SetBottomMargin(0.08)
-        
-        ROOT.gStyle.SetOptStat(0)
-        
-        canvas.SaveAs(f"{var} distribution.png")
-        
+    hist1.SetLineColor(steelblue)
+    hist2.SetLineColor(firebrick)
+    hist1.SetLineWidth(2)
+    hist2.SetLineWidth(2)
+    
+    hist1.SetLineColor(steelblue)
+    hist1.SetFillColor(steelblue)
+    hist1.SetFillStyle(3002)
+    
+    hist2.SetLineColor(firebrick)
+    hist2.SetFillColor(firebrick)
+    hist2.SetFillStyle(3002)
+
+    if ylim is not None:
+        hist1.GetYaxis().SetRangeUser(0, ylim)
+        hist2.GetYaxis().SetRangeUser(0, ylim)
+
+    if xlim is not None:
+        if isinstance(xlim, tuple) and len(xlim) == 2:
+            xlim_m, xlim_M = xlim
+            hist1.GetXaxis().SetRangeUser(xlim_m, xlim_M)
+            hist2.GetXaxis().SetRangeUser(xlim_m, xlim_M)
+        else:
+            raise ValueError("xlim must be a two element tuple: (min, max)")
+
+
+    hist1.GetXaxis().SetTitle(f"{axis_name}")
+    hist1.GetYaxis().SetTitle("Event Fraction")
+    
+    ROOT.gROOT.SetBatch(True)
+    
+    canvas = ROOT.TCanvas("canvas", f"{var} distribution", 1600, 1200)
+    hist1.Draw("HIST")
+    hist2.Draw("HIST SAME")
+    
+    legend = ROOT.TLegend(0.6, 0.8, 0.89, 0.89)
+    legend.SetFillStyle(0)                
+    legend.SetTextFont(42)                
+    legend.SetTextSize(0.03)              
+    legend.AddEntry(hist1, "longitudinal polarisation", "f")
+    legend.AddEntry(hist2, "transverse polarisation", "f")
+    legend.Draw()
+
+    canvas.SetFillColor(0)                
+    canvas.SetLeftMargin(0.12)
+    canvas.SetBottomMargin(0.08)
+    
+    ROOT.gStyle.SetOptStat(0)
+    
+    canvas.SaveAs(f"{var} distribution.png")

@@ -71,29 +71,6 @@ def print_dict(events_dict):
 
 def is_nonzero(v):
     return v.px != 0 or v.py != 0 or v.pz != 0 or v.E != 0
-    
-'''   
-def apply_smearing_to(fm_vector, is_neutrino = False):
-
-    #neutrinos
-    if is_neutrino:
-        resolution = 0.20
-        rand_smearing = random.gauss(mu = 1.0, sigma = resolution)
-        px_new = fm_vector.px * rand_smearing
-        py_new = fm_vector.py * rand_smearing
-        pz_new = fm_vector.pz * rand_smearing
-        E_new = fm_vector.E * rand_smearing
-        smeared_vector = vector.obj( px = px_new, py = py_new, pz = py_new, E = E_new )
-    
-    else:
-        #leptons
-        resolution = 0.01
-        rand_smearing = random.gauss(mu = 1.0, sigma = resolution)
-        smeared_vector = vector.obj( px = (fm_vector.px * rand_smearing), py = (fm_vector.py * rand_smearing), pz = (fm_vector.pz * rand_smearing), E =  (fm_vector.E * rand_smearing) ) 
-    
-    
-    return smeared_vector
-'''
 
 def compute_jet_resolution(energy):
     a0 = 5.43376
@@ -144,7 +121,6 @@ def apply_smearing_to(fm_vector, p_type):
         E_new = fm_vector.E * rand_smearing
         smeared_vector = vector.obj( px = px_new, py = py_new, pz = py_new, E = E_new )
         
-    
     return smeared_vector
     
 def solve_equation(a, b, c):
@@ -242,6 +218,61 @@ def compute_neutrino_momentum_from_particles(vec_lepton, vec_neutrino_expected):
     return built_neutrino_vector
 
 
+def compute_neutrino_momentum_from_particles_diff(vec_lepton, vec_neutrino_expected):
+   
+    #compute pz cosidering lepton pz   
+   
+    expected_pz_neutrino = vec_neutrino_expected.pz
+    
+    #solvin second grade equation
+    M = 80
+    pt_lepton_dot_pt_neutrino = vec_lepton.px * vec_neutrino_expected.px + vec_lepton.py * vec_neutrino_expected.py
+    pt_neutrino = vec_neutrino_expected.px**2 + vec_neutrino_expected.py**2
+    
+    alpha = M**2 + 2 * pt_lepton_dot_pt_neutrino
+    a = 4 * (vec_lepton.pz ** 2) - 4 * vec_lepton.E ** 2
+    b = 4 * alpha * vec_lepton.pz
+    c = alpha**2 - 4 * vec_lepton.E**2 * pt_neutrino
+    
+    #second grade equation solutions
+    pz_neutrino_delta_plus, pz_neutrino_delta_minus = solve_equation(a, b, c)
+    
+    neutrino_energy_deltaplus = np.sqrt( vec_neutrino_expected.px**2 + vec_neutrino_expected.py**2 + pz_neutrino_delta_plus**2 )
+    built_neutrino_vector_plus = vector.obj(
+                                            px = vec_neutrino_expected.px,
+                                            py = vec_neutrino_expected.py, 
+                                            pz = pz_neutrino_delta_plus,
+                                            E  = neutrino_energy_deltaplus
+                                            )
+  
+    neutrino_direction_plus = built_neutrino_vector_plus.to_3D()
+    lepton_direction        = vec_lepton.to_3D()
+    
+    
+  
+    neutrino_energy_deltaminus = np.sqrt( vec_neutrino_expected.px**2 + vec_neutrino_expected.py**2 + pz_neutrino_delta_minus**2 )
+    built_neutrino_vector_minus = vector.obj(
+                                            px = vec_neutrino_expected.px,
+                                            py = vec_neutrino_expected.py, 
+                                            pz = pz_neutrino_delta_minus,
+                                            E  = neutrino_energy_deltaminus
+                                            )
+            
+    
+    #computing differences with lepton pz
+    diff_plus = abs(pz_neutrino_delta_plus - vec_lepton.pz)
+    diff_minus = abs(pz_neutrino_delta_minus - vec_lepton.pz)
+   
+    #selecting correct solution
+
+    if diff_plus < diff_minus:
+        built_neutrino_vector = built_neutrino_vector_plus
+        
+    else:
+        built_neutrino_vector = built_neutrino_vector_minus
+        
+    return built_neutrino_vector
+
 
 def get_fm_of(p_id, events_dict, apply_smearing = False):
     """
@@ -295,25 +326,38 @@ def get_fm_of(p_id, events_dict, apply_smearing = False):
                         fm_dict[event_id] = smeared_momentum
                    
         if p_id == [23]:
+        
             for event_id, particles_dict in events_dict.items():
                 fm_vec_1 = vector.obj(px = 0, py = 0, pz = 0, E = 0)
                 fm_vec_2 = vector.obj(px = 0, py = 0, pz = 0, E = 0)
                 
+                event_type = f_event_type(particles_dict)
+                
+                #24 = W; 23 = Z
+                if abs(event_type) == 24 :
+                    continue
+                
                 for pid, cinematic in particles_dict.items():
-                    if (pid) in [11, 13, 15]:
+                    if (pid) in [11, 13]:
                         non_smeared_momentum = cinematic.build_fm()
                         smeared_momentum = apply_smearing_to(non_smeared_momentum, "lepton")
                         fm_vec_1 = smeared_momentum
-                    if (pid) in [-11, -13, -15]:
+                        
+                    if (pid) in [-11, -13]:
                         non_smeared_momentum = cinematic.build_fm()
                         smeared_momentum = apply_smearing_to(non_smeared_momentum, "lepton")
                         fm_vec_2 = smeared_momentum
                         
+                        
                 if not is_nonzero(fm_vec_1) or not is_nonzero(fm_vec_2):
                     continue                                                    # salta l’evento se manca uno dei due
+                    
+               
                 fm_dict[event_id] = fm_vec_1 + fm_vec_2
                 
+
         if set(p_id) == set([24, -24]):
+        
             for event_id, particles_dict in events_dict.items():
                 event_type = f_event_type(particles_dict)
                 
@@ -325,13 +369,13 @@ def get_fm_of(p_id, events_dict, apply_smearing = False):
                 fm_vec_2 = vector.obj(px = 0, py = 0, pz = 0, E = 0)
                 
                 for pid, cinematic in particles_dict.items():
-                    if abs(pid) in [11, 13, 15]:
+                    if abs(pid) in [11, 13]:
                         non_smeared_momentum = cinematic.build_fm()
                         smeared_momentum = apply_smearing_to(non_smeared_momentum, "lepton")
                         fm_vec_1 = smeared_momentum
                         
                 for pid, cinematic in particles_dict.items():
-                    if abs(pid) in [12, 14, 16]:
+                    if abs(pid) in [12, 14]:
                         non_smeared_momentum = cinematic.build_fm()
                         smeared_momentum = apply_smearing_to(non_smeared_momentum, "neutrino")
                         fm_vec_2 = compute_neutrino_momentum_from_particles(fm_vec_1, smeared_momentum)
@@ -339,6 +383,49 @@ def get_fm_of(p_id, events_dict, apply_smearing = False):
                 if not is_nonzero(fm_vec_1) or not is_nonzero(fm_vec_2):
                     continue                       # salta l’evento se manca uno dei due
                 fm_dict[event_id] = fm_vec_1 + fm_vec_2
+            '''
+            for event_id, particles_dict in events_dict.items():
+                event_type = f_event_type(particles_dict)
+                
+                #24 = W; 23 = Z
+                if event_type == 23:
+                    continue
+                    
+                vec_neutrino = vector.obj(px = 0, py = 0, pz = 0, E = 0)
+                vec_lepton = vector.obj(px = 0, py = 0, pz = 0, E = 0)
+                vec_built = vector.obj(px = 0, py = 0, pz = 0, E = 0)
+
+                e_type = f_event_type(particles_dict)
+        
+                if e_type == 23:
+                    continue
+                    
+                for pid, cinematic in particles_dict.items():
+                    if abs(pid) in [12, 14, 16]:
+                        vec_neutrino = vector.obj(px = cinematic.px, py = cinematic.py, pz = cinematic.pz, E = cinematic.E)
+                        
+                for pid, cinematic in particles_dict.items():     
+                    if abs(pid) in [11, 13, 15]:
+                        vec_lepton_lhe = vector.obj(px = cinematic.px, py = cinematic.py, pz = cinematic.pz, E = cinematic.E)
+                        smeared_momentum = apply_smearing_to(vec_lepton_lhe, "lepton")
+                        vec_lepton = smeared_momentum
+
+                        
+                eta_lepton = vec_lepton.eta
+                
+                if abs(eta_lepton) <= 2.5:
+                    #usa minimum angle
+                    vec_built, _ = compute_neutrino_momentum_from_particles(vec_lepton[evt_id], vec_neutrino[evt_id])
+                        
+                else:
+                    #usa pz difference
+                    vec_built = compute_neutrino_momentum_from_particles_diff(vec_lepton[evt_id], vec_neutrino[evt_id])
+                
+                if not is_nonzero(vec_lepton) or not is_nonzero(vec_built):
+                    continue                       
+
+                fm_w_dict[evt_id] = vec_lepton + vec_built
+                '''
         
         if set(p_id) == set([25]):
             for event_id, particles_dict in events_dict.items():
@@ -364,9 +451,9 @@ def get_fm_of(p_id, events_dict, apply_smearing = False):
 
                     for fm_anti_tau in antitau_list:
                         fm_sum = fm_tau + fm_anti_tau
-                        tollerance = 2
+                        tollerance = 10
 
-                        if (fm_sum.M - 125) < tollerance:
+                        if abs(fm_sum.M - 125) < tollerance:
                             fm_dict[event_id] = fm_sum
                 
                 
@@ -426,9 +513,9 @@ def get_fm_of(p_id, events_dict, apply_smearing = False):
                 fm_vec_2 = vector.obj(px = 0, py = 0, pz = 0, E = 0)
                 
                 for pid, cinematic in particles_dict.items():
-                    if (pid) in [11, 13, 15]:
+                    if (pid) in [11, 13]:
                         fm_vec_1 = cinematic.build_fm()
-                    if (pid) in [-11, -13, -15]:
+                    if (pid) in [-11, -13]:
                         fm_vec_2 = vector.obj(px = cinematic.px, py = cinematic.py, pz = cinematic.pz, E = cinematic.E)
                            
                 if not is_nonzero(fm_vec_1) or not is_nonzero(fm_vec_2):
@@ -446,14 +533,14 @@ def get_fm_of(p_id, events_dict, apply_smearing = False):
                 fm_vec_2 = vector.obj(px = 0, py = 0, pz = 0, E = 0)
                 
                 for pid, cinematic in particles_dict.items():
-                    if abs(pid) in [11, 13, 15]:
+                    if abs(pid) in [11, 13]:
                         fm_vec_1 = cinematic.build_fm()
                        
-                    if abs(pid) in [12, 14, 16]:
+                    if abs(pid) in [12, 14]:
                         fm_vec_2 = compute_neutrino_momentum(events_dict, event_id)
                         
                 if not is_nonzero(fm_vec_1) or not is_nonzero(fm_vec_2):
-                    print("WARNING")                                                    # salta l’evento se manca uno dei due
+                    continue                                                    # salta l’evento se manca uno dei due
                 fm_dict[event_id] = fm_vec_1 + fm_vec_2
                 
                 
@@ -473,9 +560,9 @@ def get_fm_of(p_id, events_dict, apply_smearing = False):
 
                     for fm_anti_tau in antitau_list:
                         fm_sum = fm_tau + fm_anti_tau
-                        tollerance = 2
+                        tollerance = 10
 
-                        if (fm_sum.M - 125) < tollerance:
+                        if abs(fm_sum.M - 125) < tollerance:
                             fm_dict[event_id] = fm_sum
 
     return fm_dict
@@ -505,7 +592,7 @@ def apply_selections(events_dict):
 
             for fm_anti_tau in antitau_list:
                 fm_sum_0 = fm_tau + fm_anti_tau
-                tollerance = 2
+                tollerance = 6
 
                 if (fm_sum_0.M - 125) < tollerance:
                     fm_sum = fm_sum_0
@@ -875,22 +962,22 @@ def build_decay_products(events_dict, apply_smearing = False):
             if event_type == 23:
               
                 for pid, cinematic in p_dict.items():
-                    if pid in [11, 13, 15]:
+                    if pid in [11, 13]:
                         non_smeared_fm = cinematic.build_fm()
                         lepton_dict_z[event_id] = apply_smearing_to(non_smeared_fm, "lepton")
-                    if pid in [-11, -13, -15]:
+                    if pid in [-11, -13]:
                         non_smeared_fm = cinematic.build_fm()
                         antilepton_dict_z[event_id] = apply_smearing_to(non_smeared_fm, "lepton")
             
             #building W+ dictionary --> l+n
             if event_type == 24:
                 for pid, cinematic in p_dict.items():
-                    if pid in [-11, -13, -15]:
+                    if pid in [-11, -13]:
                         antilepton_vec_non_smeared = cinematic.build_fm()
                         antilepton_vec_smeared = apply_smearing_to(antilepton_vec_non_smeared, "lepton")
                         antilepton_dict_w_plus[event_id] = antilepton_vec_smeared
                 for pid, cinematic in p_dict.items():
-                    if pid in [12, 14, 16]:
+                    if pid in [12, 14]:
                         vec_neutrino_expected = cinematic.build_fm()
                         vec_neutrino_smeared = apply_smearing_to(vec_neutrino_expected, "neutrino")
                         lepton_dict_w_plus[event_id] = compute_neutrino_momentum_from_particles(antilepton_vec_smeared, vec_neutrino_smeared)
@@ -898,12 +985,12 @@ def build_decay_products(events_dict, apply_smearing = False):
             #building W- dictionary --> l-n_bar
             if event_type == -24:
                 for pid, cinematic in p_dict.items():
-                    if pid in [11, 13, 15]:
+                    if pid in [11, 13]:
                         lepton_vec = cinematic.build_fm()
                         lepton_vec_smeared = apply_smearing_to(lepton_vec, "lepton")
                         lepton_dict_w_minus[event_id] = lepton_vec_smeared
                 for pid, cinematic in p_dict.items():
-                    if pid in [-12, -14, -16]:
+                    if pid in [-12, -14]:
                         antineutrino_vec = cinematic.build_fm()
                         antineutrino_smeared = apply_smearing_to(antineutrino_vec, "neutrino")
                         antilepton_dict_w_minus[event_id] = compute_neutrino_momentum_from_particles(lepton_vec_smeared, antineutrino_smeared)
@@ -916,30 +1003,30 @@ def build_decay_products(events_dict, apply_smearing = False):
             if event_type == 23:
               
                 for pid, cinematic in p_dict.items():
-                    if pid in [11, 13, 15]:
+                    if pid in [11, 13]:
                         lepton_dict_z[event_id] = cinematic.build_fm()
-                    if pid in [-11, -13, -15]:
+                    if pid in [-11, -13]:
                         antilepton_dict_z[event_id] = cinematic.build_fm()
             
             #building W+ dictionary --> l+n
             if event_type == 24:
                 for pid, cinematic in p_dict.items():
-                    if pid in [-11, -13, -15]:
+                    if pid in [-11, -13]:
                         antilepton_vec = cinematic.build_fm()
                         antilepton_dict_w_plus[event_id] = antilepton_vec
                 for pid, cinematic in p_dict.items():
-                    if pid in [12, 14, 16]:
+                    if pid in [12, 14]:
                         vec_neutrino_expected = cinematic.build_fm()
                         lepton_dict_w_plus[event_id] = compute_neutrino_momentum_from_particles(antilepton_vec, vec_neutrino_expected)
             
             #building W- dictionary --> l-n_bar
             if event_type == -24:
                 for pid, cinematic in p_dict.items():
-                    if pid in [11, 13, 15]:
+                    if pid in [11, 13]:
                         lepton_vec = cinematic.build_fm()
                         lepton_dict_w_minus[event_id] = lepton_vec
                 for pid, cinematic in p_dict.items():
-                    if pid in [-12, -14, -16]:
+                    if pid in [-12, -14]:
                         antineutrino_vec = cinematic.build_fm()
                         antilepton_dict_w_minus[event_id] = compute_neutrino_momentum_from_particles(lepton_vec, antineutrino_vec)
                     
@@ -1140,6 +1227,7 @@ def build_df_dict_Z(LHE_file, apply_smearing = False):
     
     
     #costruzione liste di variabili
+    print("Building lists")
     
     for ((e_id1, fm_lep), (e_id2, fm_antilep)) in zip(lep_z_dict.items(), antilep_z_dict.items()):
         pt_l1.append(fm_lep.pt)
@@ -1167,6 +1255,7 @@ def build_df_dict_Z(LHE_file, apply_smearing = False):
     delta_phi = get_deltaphi_of(fm_z_dict, lep_z_dict, antilep_z_dict, fm_h_dict)
 
     #creazione dataframe
+    print("Building dataframe")
     log = {
             "Pt lepton"         : pt_l1,
             "Pt antilepton"     : pt_l2,
@@ -1216,18 +1305,19 @@ def build_df_dict_W(LHE_file, apply_smearing = False):
     #costruzione dizionari
     events_complete = read_file(LHE_file)           #all events
     id_events_tot = apply_selections(events_complete)   #event ids that pass selections
-    id_events = id_events_tot[:10000]
-    print(len(id_events))
+    print(len(id_events_tot))
     events = {}
     
     #selected events
-    for i in id_events:
+    for i in id_events_tot:
         events[i] = events_complete[i]
     
-    fm_w_dict = get_fm_of([24, -24], events, apply_smearing = apply_smearing)    
+    fm_w_dict = get_fm_of([24, -24], events, apply_smearing = apply_smearing)
+    print("len W", len(fm_w_dict.values()))  
     _, _, lep_w_dict, antilep_w_dict = build_decay_products(events, apply_smearing = apply_smearing) 
     fm_h_all_dict = get_fm_of([25], events, apply_smearing = apply_smearing)                               
     
+    print("len lep, antilep", len(lep_w_dict.values()), len(antilep_w_dict.values()))
     
     #filtro H
     fm_h_dict = {}           
@@ -1237,9 +1327,12 @@ def build_df_dict_W(LHE_file, apply_smearing = False):
         fm_higgs = fm_h_all_dict[event_id]        
         
         fm_h_dict[event_id] = fm_higgs
+
+    print("len H",len(fm_h_all_dict.values()))
     
     
     #costruzione liste di variabili
+    print("Building lists")
     common_ids = set.intersection(set(fm_w_dict), set(lep_w_dict), set(antilep_w_dict), set(fm_h_all_dict))
     
     for event_id in common_ids:
@@ -1257,26 +1350,26 @@ def build_df_dict_W(LHE_file, apply_smearing = False):
         
         phi_l1.append(fm_lep.phi)
         phi_l2.append(fm_antilep.phi)
-        '''
+        
         pt_w.append(fm_w.pt)
-        pt_h.append(fm_h.pt)
+        #pt_h.append(fm_h.pt)
         
         eta_w.append(fm_w.eta)
-        eta_h.append(fm_h.eta)
+        #eta_h.append(fm_h.eta)
         
         phi_w.append(fm_w.phi)
-        phi_h.append(fm_h.phi)
+        #phi_h.append(fm_h.phi)
         
-        M_wh.append(fm_vh.M)
-        '''
+        #M_wh.append(fm_vh.M)
+        
     _, pt_b_w = get_lep_ptbalance(events)
     
     
-    pt_w  = [fm_w.pt for fm_w in list(fm_w_dict.values())]
+    #pt_w  = [fm_w.pt for fm_w in list(fm_w_dict.values())]
     #pt_h  = [fm_h.pt for fm_h in list(fm_h_dict.values())]
-    eta_w = [fm_w.eta for fm_w in list(fm_w_dict.values())]
+    #eta_w = [fm_w.eta for fm_w in list(fm_w_dict.values())]
     #eta_h = [fm_h.eta for fm_h in list(fm_h_dict.values())]
-    phi_w = [fm_w.phi for fm_w in list(fm_w_dict.values())]
+    #phi_w = [fm_w.phi for fm_w in list(fm_w_dict.values())]
     #phi_h = [fm_h.phi for fm_h in list(fm_h_dict.values())]
     M_wh  = [fm_tot.M for fm_tot in list(compute_tot_fm(fm_w_dict, fm_h_dict).values())]
     
@@ -1286,6 +1379,7 @@ def build_df_dict_W(LHE_file, apply_smearing = False):
     delta_phi = get_deltaphi_of(fm_w_dict, lep_w_dict, antilep_w_dict, fm_h_dict)
 
     #creazione dataframe
+    print("Building dataframe")
     log = {
             "Pt lepton"         : pt_l1,
             "Pt antilepton"     : pt_l2,
@@ -1329,101 +1423,99 @@ def sturges (N_events) :
     return ceil (1 + 3.322 * np.log (N_events))
 
 import ROOT
-def ROOT_hist1d(list1, list2, var, axis_name, nbins = None, xmin = None, xmax = None, ylim = None):
+def ROOT_hist1d(list1, list2, var, axis_name, nbins = None, xmin = None, xmax = None, ylim = None, xlim = None):
+
+    if type(list1) == dict:
+        list1 = list(list1.values())
     
+    if type(list2) == dict:
+        list2 = list(list2.values())
 
-        if type(list1) == dict:
-            list1 = list(list1.values())
+    if xmin is None:
+        xmin1 = min(list1)
+        xmin2 = min(list2)
+    else:
+        xmin1 = xmin
+        xmin2 = xmin
         
-        if type(list2) == dict:
-            list2 = list(list2.values())
+    if xmax is None:
+        xmax1 = max(list1)
+        xmax2 = max(list2)
+    else:
+        xmax1 = xmax
+        xmax2 = xmax
 
-        if xmin is None:
-            xmin1 = min(list1)
-            xmin2 = min(list2)
-            xmin = min(min(list1), min(list2))
-        if xmax is None:
-            xmax1 = max(list1)
-            xmax2 = max(list2)
-            xmax = min(max(list1), max(list2))
+    if nbins is None:
+        nbins1 =  sturges (len (list1))
+        nbins2 =  sturges (len (list2))
+    else:
+        nbins1, nbins2 = nbins
 
-        if nbins is None:
-            nbins1 = 2 * sturges (len (list1))
-            nbins2 = 2 * sturges (len (list2))
+    hist1 = ROOT.TH1F("hist1", f"{var} distribution", nbins1, xmin1, xmax1)
+    hist2 = ROOT.TH1F("hist2", f"{var} distribution", nbins2, xmin2, xmax2)
+    
+    for value in list1:
+        hist1.Fill(value)
+    for value in list2:
+        hist2.Fill(value)
+        
+    #normalisation
+    if hist1.Integral() > 0:
+        hist1.Scale(1.0/hist1.Integral())
+    
+    if hist2.Integral() > 0:
+        hist2.Scale(1.0/hist2.Integral())
+        
+    steelblue  = ROOT.TColor.GetColor("#4682B4")  #steelblue
+    firebrick  = ROOT.TColor.GetColor("#B22222")  #firebrick
 
+    hist1.SetLineColor(steelblue)
+    hist2.SetLineColor(firebrick)
+    hist1.SetLineWidth(2)
+    hist2.SetLineWidth(2)
+    
+    hist1.SetLineColor(steelblue)
+    hist1.SetFillColor(steelblue)
+    hist1.SetFillStyle(3002)
+    
+    hist2.SetLineColor(firebrick)
+    hist2.SetFillColor(firebrick)
+    hist2.SetFillStyle(3002)
+
+    if ylim is not None:
+        hist1.GetYaxis().SetRangeUser(0, ylim)
+        hist2.GetYaxis().SetRangeUser(0, ylim)
+
+    if xlim is not None:
+        if isinstance(xlim, tuple) and len(xlim) == 2:
+            xlim_m, xlim_M = xlim
+            hist1.GetXaxis().SetRangeUser(xlim_m, xlim_M)
+            hist2.GetXaxis().SetRangeUser(xlim_m, xlim_M)
         else:
-            nbins1 = nbins
-            nbins2 = nbins
+            raise ValueError("xlim must be a two element tuple: (min, max)")
 
-        hist1 = ROOT.TH1F("hist1", f"{var} distribution", nbins1, xmin, xmax)
-        hist2 = ROOT.TH1F("hist2", f"{var} distribution", nbins2, xmin, xmax)
-        
-        for value in list1:
-            hist1.Fill(value)
-        for value in list2:
-            hist2.Fill(value)
-            
-        #normalisation
-        '''
-        total = sum(hist1.GetBinContent(i) for i in range(1, nbins1 + 1))
-        if total > 0:
-            hist1.Scale(1.0 / total)
 
-        total = sum(hist2.GetBinContent(i) for i in range(1, nbins2 + 1))
-        if total > 0:
-            hist2.Scale(1.0 / total) 
-        '''
-        if hist1.Integral() > 0:
+    hist1.GetXaxis().SetTitle(f"{axis_name}")
+    hist1.GetYaxis().SetTitle("Event Fraction")
+    
+    ROOT.gROOT.SetBatch(True)
+    
+    canvas = ROOT.TCanvas("canvas", f"{var} distribution", 1600, 1200)
+    hist1.Draw("HIST")
+    hist2.Draw("HIST SAME")
+    
+    legend = ROOT.TLegend(0.6, 0.8, 0.89, 0.89)
+    legend.SetFillStyle(0)                
+    legend.SetTextFont(42)                
+    legend.SetTextSize(0.03)              
+    legend.AddEntry(hist1, "longitudinal polarisation", "f")
+    legend.AddEntry(hist2, "transverse polarisation", "f")
+    legend.Draw()
 
-            hist1.Scale(1.0/hist1.Integral())
-        
-        if hist2.Integral() > 0:
-            hist2.Scale(1.0/hist2.Integral())
-        
-        steelblue  = ROOT.TColor.GetColor("#4682B4")  #steelblue
-        firebrick  = ROOT.TColor.GetColor("#B22222")  #firebrick
-
-        hist1.SetLineColor(steelblue)
-        hist2.SetLineColor(firebrick)
-        hist1.SetLineWidth(2)
-        hist2.SetLineWidth(2)
-        
-        hist1.SetLineColor(steelblue)
-        hist1.SetFillColor(steelblue)
-        hist1.SetFillStyle(3002)
-        
-        hist2.SetLineColor(firebrick)
-        hist2.SetFillColor(firebrick)
-        hist2.SetFillStyle(3002)
-        #hist1.GetXaxis().SetRangeUser(0, 600)
-        #hist1.GetXaxis().SetRangeUser(0, 600)
-
-        if ylim is not None:
-            hist1.GetYaxis().SetRangeUser(0, ylim)
-            hist2.GetYaxis().SetRangeUser(0, ylim)
-
-        hist1.GetXaxis().SetTitle(f"{axis_name}")
-        hist1.GetYaxis().SetTitle("Event Fraction")
-        
-        ROOT.gROOT.SetBatch(True)
-        
-        canvas = ROOT.TCanvas("canvas", f"{var} distribution", 1600, 1200)
-        hist1.Draw("HIST")
-        hist2.Draw("HIST SAME")
-        
-        legend = ROOT.TLegend(0.6, 0.8, 0.89, 0.89)
-        legend.SetFillStyle(0)                
-        legend.SetTextFont(42)                
-        legend.SetTextSize(0.03)              
-        legend.AddEntry(hist1, "longitudinal polarisation", "f")
-        legend.AddEntry(hist2, "transverse polarisation", "f")
-        legend.Draw()
-
-        canvas.SetFillColor(0)                
-        canvas.SetLeftMargin(0.12)
-        canvas.SetBottomMargin(0.08)
-        
-        ROOT.gStyle.SetOptStat(0)
-        
-        canvas.SaveAs(f"{var} distribution.png")
-        
+    canvas.SetFillColor(0)                
+    canvas.SetLeftMargin(0.12)
+    canvas.SetBottomMargin(0.08)
+    
+    ROOT.gStyle.SetOptStat(0)
+    
+    canvas.SaveAs(f"{var} distribution.png")
