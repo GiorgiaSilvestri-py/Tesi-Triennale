@@ -314,7 +314,8 @@ def main():
 
     #----------------------------------------------------------------------------------      
 
-    print("\n Transverse polarisation \n")
+
+    print("\nTransverse polarisation \n")
 
     LHE_file = "unweighted_events_T.lhe"
     events_dict = read_file(LHE_file)
@@ -329,7 +330,7 @@ def main():
     for e_id, particle_list in events_dict.items():
 
         if e_id % 10000 == 0:
-            print(f"Processing event {e_id} \n")
+            print(f"Processing event {e_id}")
 
         event_type = f_event_type(particle_list)
 
@@ -614,55 +615,56 @@ def main():
                     selected_WT.append(e_id)
             
             
+    #--------------------------------------------------------------------------------------------
+
     #ZH dataframe
-    N_tot_ZL = len(total_ZL)
-    N_em_ZL = len(e_mu_ZL)
-    N_cut1_ZL = len(cut1_ZL)
-    N_cut2_ZL = len(cut2_ZL)
-    N_cut12_ZL = len(selected_ZL)
+    N_tot_ZL      = len(total_ZL)
+    N_em_ZL       = len(e_mu_ZL)
+    N_cut1_ZL     = len(cut1_ZL)
+    N_cut2_ZL     = len(cut2_ZL)
+    N_cut12_ZL    = len(selected_ZL)
 
-    N_tot_ZT = len(total_ZT)
-    N_em_ZT = len(e_mu_ZT)
-    N_cut1_ZT = len(cut1_ZT)
-    N_cut2_ZT = len(cut2_ZT)
-    N_cut12_ZT = len(selected_ZT)
-
+    N_tot_ZT      = len(total_ZT)
+    N_em_ZT       = len(e_mu_ZT)
+    N_cut1_ZT     = len(cut1_ZT)
+    N_cut2_ZT     = len(cut2_ZT)
+    N_cut12_ZT    = len(selected_ZT)
 
     #wh dataframe
-    N_tot_WL = len(total_WL)
-    N_em_WL = len(e_mu_WL)
-    N_cut1_WL = len(cut1_WL)
-    N_cut2_WL = len(cut2_WL)
-    N_cut12_WL = len(cut12_WL)
-    N_cut3_WL = len(cut3_WL)
-    N_cut31_WL = len(cut31_WL)
-    N_cut123_WL = len(selected_WL)
+    N_tot_WL      = len(total_WL)
+    N_em_WL       = len(e_mu_WL)
+    N_cut1_WL     = len(cut1_WL)
+    N_cut2_WL     = len(cut2_WL)
+    N_cut12_WL    = len(cut12_WL)
+    N_cut3_WL     = len(cut3_WL)
+    N_cut31_WL    = len(cut31_WL)
+    N_cut123_WL   = len(selected_WL)
 
-    N_tot_WT = len(total_WT)
-    N_em_WT = len(e_mu_WT)
-    N_cut1_WT = len(cut1_WT)
-    N_cut2_WT = len(cut2_WT)
-    N_cut12_WT = len(cut12_WT)
-    N_cut3_WT = len(cut3_WT)
-    N_cut31_WT = len(cut31_WT)
-    N_cut123_WT = len(selected_WT)
+    N_tot_WT      = len(total_WT)
+    N_em_WT       = len(e_mu_WT)
+    N_cut1_WT     = len(cut1_WT)
+    N_cut2_WT     = len(cut2_WT)
+    N_cut12_WT    = len(cut12_WT)
+    N_cut3_WT     = len(cut3_WT)
+    N_cut31_WT    = len(cut31_WT)
+    N_cut123_WT   = len(selected_WT)
 
 
     #channel dataframe
     data = [
-            ["Total events", N_tot_ZL, N_tot_ZT, N_tot_WL, N_tot_WT],
-            ["Events with e/mu", N_em_ZL, N_em_ZT, N_em_WL, N_em_WT],
-            ["Events after cut1 only", N_cut1_ZL, N_cut1_ZT, N_cut1_WL, N_cut1_WT],
-            ["Events after cut2 only", N_cut2_ZL, N_cut2_ZT, N_cut2_WL, N_cut2_WT],
-            ["Events after cut3 only", "-", "-", N_cut3_WL, N_cut3_WT],
-            ["Eventi selezionati", N_cut12_ZL, N_cut12_ZT, N_cut123_WL, N_cut123_WT]
+            ["Total events",            N_tot_ZL,   N_tot_ZT,   N_tot_WL,    N_tot_WT],
+            ["Events with e/mu",        N_em_ZL,    N_em_ZT,    N_em_WL,     N_em_WT],
+            ["Events after cut1 only",  N_cut1_ZL,  N_cut1_ZT,  N_cut1_WL,   N_cut1_WT],
+            ["Events after cut2 only",  N_cut2_ZL,  N_cut2_ZT,  N_cut2_WL,   N_cut2_WT],
+            ["Events after cut3 only",  "-",        "-",        N_cut3_WL,   N_cut3_WT],
+            ["Eventi selezionati",      N_cut12_ZL, N_cut12_ZT, N_cut123_WL, N_cut123_WT]
             ]
 
 
     df_channel = pd.DataFrame(data, columns=["", "ZLH", "ZTH", "WLH", "WTH"])
 
     print("\n" + "="*60)
-    print("{:^60}".format("H > GAMMA GAMMA"))
+    print("{:^60}".format("H > γγ"))
     print("="*60 + "\n")
     print(tabulate(df_channel.values.tolist(), headers=df_channel.columns.tolist(), tablefmt="grid"))
 
@@ -675,11 +677,13 @@ def main():
     #total efficiencies
     epsilon_ZL = N_tot_ZL / 50000
     epsilon_0_ZL = N_em_ZL / 50000
+
     epsilon_1_ZL = N_cut1_ZL / N_em_ZL
     epsilon_2_ZL = N_cut2_ZL / N_em_ZL
     epsilon_tot_ZL = N_cut12_ZL / N_tot_ZL
 
     #partial efficiencies
+    part_epsilon_0_ZL = N_em_ZL / N_tot_ZL
     part_epsilon_1_ZL = N_cut1_ZL / N_em_ZL
     part_epsilon_2_ZL = N_cut12_ZL / N_cut1_ZL
 
@@ -687,11 +691,13 @@ def main():
     #total efficiencies
     epsilon_ZT = N_tot_ZT / 50000
     epsilon_0_ZT = N_em_ZT / 50000
+
     epsilon_1_ZT = N_cut1_ZT / N_em_ZT
     epsilon_2_ZT = N_cut2_ZT / N_em_ZT
     epsilon_tot_ZT = N_cut12_ZT / N_tot_ZT
 
     #partial efficiencies
+    part_epsilon_0_ZT = N_em_ZT / N_tot_ZT
     part_epsilon_1_ZT = N_cut1_ZT / N_em_ZT
     part_epsilon_2_ZT = N_cut12_ZT / N_cut1_ZT
 
@@ -699,12 +705,14 @@ def main():
     #total efficiencies
     epsilon_WL = N_tot_WL / 50000
     epsilon_0_WL = N_em_WL / 50000
+
     epsilon_1_WL = N_cut1_WL / N_em_WL
     epsilon_2_WL = N_cut2_WL / N_em_WL
     epsilon_3_WL = N_cut3_WL / N_em_WL
     epsilon_tot_WL = N_cut123_WL / N_tot_WL
 
     #partial efficiencies
+    part_epsilon_0_WL = N_em_WL / N_tot_WL
     part_epsilon_1_WL = N_cut1_WL / N_em_WL
     part_epsilon_2_WL = N_cut12_WL / N_cut1_WL
     part_epsilon_3_WL = N_cut123_WL / N_cut12_WL
@@ -714,23 +722,25 @@ def main():
     #total efficiencies
     epsilon_WT = N_tot_WT / 50000
     epsilon_0_WT = N_em_WT / 50000
+
     epsilon_1_WT = N_cut1_WT / N_em_WT
     epsilon_2_WT = N_cut2_WT / N_em_WT
     epsilon_3_WT = N_cut3_WT / N_em_WT
     epsilon_tot_WT = N_cut123_WT / N_tot_WT
 
     #partial efficiencies
+    part_epsilon_0_WT = N_em_WT / N_tot_WT
     part_epsilon_1_WT = N_cut1_WT / N_em_WT
     part_epsilon_2_WT = N_cut12_WT / N_cut1_WT
     part_epsilon_3_WT = N_cut123_WT / N_cut12_WT
     
 
     efficiencies = np.array([
-                            ["channel fraction",        f"{epsilon_ZL:.2f}",   f"{epsilon_ZT:.2f}",   f"{epsilon_WL:.2f}",   f"{epsilon_WT:.2f}"],
-                            ["ε₀ = e/μ / total",        f"{epsilon_0_ZL:.2f}", f"{epsilon_0_ZT:.2f}", f"{epsilon_0_WL:.2f}", f"{epsilon_0_WT:.2f}"],
-                            ["ε₁ = cut1 / e/μ",         f"{epsilon_1_ZL:.2f}", f"{epsilon_1_ZT:.2f}", f"{epsilon_1_WL:.2f}", f"{epsilon_1_WT:.2f}"],
-                            ["ε₂ = cut2 / e/μ",         f"{epsilon_2_ZL:.2f}", f"{epsilon_2_ZT:.2f}", f"{epsilon_2_WL:.2f}", f"{epsilon_2_WT:.2f}"],
-                            ["ε₃ = cut3 / e/μ",         "-",                   "-",                   f"{epsilon_3_WL:.2f}", f"{epsilon_3_WT:.2f}"],
+                            ["channel fraction",        f"{epsilon_ZL:.2f}",     f"{epsilon_ZT:.2f}",     f"{epsilon_WL:.2f}",     f"{epsilon_WT:.2f}"],
+                            ["ε₀ = e/μ / total",        f"{epsilon_0_ZL:.2f}",   f"{epsilon_0_ZT:.2f}",   f"{epsilon_0_WL:.2f}",   f"{epsilon_0_WT:.2f}"],
+                            ["ε₁ = cut1 / e/μ",         f"{epsilon_1_ZL:.2f}",   f"{epsilon_1_ZT:.2f}",   f"{epsilon_1_WL:.2f}",   f"{epsilon_1_WT:.2f}"],
+                            ["ε₂ = cut2 / e/μ",         f"{epsilon_2_ZL:.2f}",   f"{epsilon_2_ZT:.2f}",   f"{epsilon_2_WL:.2f}",   f"{epsilon_2_WT:.2f}"],
+                            ["ε₃ = cut3 / e/μ",         "-",                     "-",                     f"{epsilon_3_WL:.2f}",   f"{epsilon_3_WT:.2f}"],
                             ["ε_tot = selected events", f"{epsilon_tot_ZL:.2f}", f"{epsilon_tot_ZT:.2f}", f"{epsilon_tot_WL:.2f}", f"{epsilon_tot_WT:.2f}"]
                         ])
     
@@ -742,11 +752,12 @@ def main():
     print("="*60 + "\n")
     print(tabulate(df_efficiencies.values.tolist(), headers=df_efficiencies.columns.tolist(), tablefmt="grid"))
 
+
     part_total_eff = np.array([
-                                ["ε₀ = e/μ / total",    f"{epsilon_0_ZL:.2f}",      f"{epsilon_0_ZL:.2f}", f"{epsilon_0_ZT:.2f}",      f"{epsilon_0_ZT:.2f}", f"{epsilon_0_WL:.2f}",      f"{epsilon_0_WL:.2f}", f"{epsilon_0_WT:.2f}",      f"{epsilon_0_WT:.2f}"],
-                                ["ε₁ (cut1)",           f"{part_epsilon_1_ZL:.2f}", f"{epsilon_1_ZL:.2f}", f"{part_epsilon_1_ZT:.2f}", f"{epsilon_1_ZT:.2f}", f"{part_epsilon_1_WL:.2f}", f"{epsilon_1_WL:.2f}", f"{part_epsilon_1_WT:.2f}", f"{epsilon_1_WT:.2f}"],
-                                ["ε₂ (cut2)",           f"{part_epsilon_2_ZL:.2f}", f"{epsilon_2_ZL:.2f}", f"{part_epsilon_2_ZT:.2f}", f"{epsilon_2_ZT:.2f}", f"{part_epsilon_2_WL:.2f}", f"{epsilon_2_WL:.2f}", f"{part_epsilon_2_WT:.2f}", f"{epsilon_2_WT:.2f}"],
-                                ["ε₃ (cut3)",           "-",                        "-",                   "-",                        "-",                   f"{part_epsilon_3_WL:.2f}", f"{epsilon_3_WL:.2f}", f"{part_epsilon_3_WT:.2f}", f"{epsilon_3_WT:.2f}"],
+                                ["ε₀ (e/μ)",      f"{part_epsilon_0_ZL:.2f}", f"{epsilon_0_ZL:.2f}", f"{part_epsilon_0_ZT:.2f}", f"{epsilon_0_ZT:.2f}", f"{part_epsilon_0_WL:.2f}", f"{epsilon_0_WL:.2f}", f"{part_epsilon_0_WT:.2f}", f"{epsilon_0_WT:.2f}"],
+                                ["ε₁ (cut1)",     f"{part_epsilon_1_ZL:.2f}", f"{epsilon_1_ZL:.2f}", f"{part_epsilon_1_ZT:.2f}", f"{epsilon_1_ZT:.2f}", f"{part_epsilon_1_WL:.2f}", f"{epsilon_1_WL:.2f}", f"{part_epsilon_1_WT:.2f}", f"{epsilon_1_WT:.2f}"],
+                                ["ε₂ (cut2)",     f"{part_epsilon_2_ZL:.2f}", f"{epsilon_2_ZL:.2f}", f"{part_epsilon_2_ZT:.2f}", f"{epsilon_2_ZT:.2f}", f"{part_epsilon_2_WL:.2f}", f"{epsilon_2_WL:.2f}", f"{part_epsilon_2_WT:.2f}", f"{epsilon_2_WT:.2f}"],
+                                ["ε₃ (cut3)",     "-",                        "-",                   "-",                        "-",                   f"{part_epsilon_3_WL:.2f}", f"{epsilon_3_WL:.2f}", f"{part_epsilon_3_WT:.2f}", f"{epsilon_3_WT:.2f}"],
                             ])
     
     columns = ["", 
@@ -770,68 +781,73 @@ def main():
 
     #computing LHC expected events number
 
-    #xsection_L = 0.42    #fb
     xsection_L = 282    #fb
-    BR = 0.00270
-    #xsection_T = 0.3739  #fb
+    BR         = 0.00270
     xsection_T = 252  #fb
-
-    lum = 100            #1/fb 
+    lum        = 100            #1/fb 
 
     #ZLH
-    N_tot_L_LHC    = xsection_L * lum
-    N_tot_ZL_LHC    = xsection_L * lum * epsilon_ZL
-    N_tot_ZL_diphoton = N_tot_ZL_LHC * BR
-    N_em_ZL_LHC     = N_tot_ZL_diphoton * epsilon_0_ZL
-    N_cut1_ZL_LHC   = N_tot_ZL_diphoton * epsilon_0_ZL * part_epsilon_1_ZL
-    N_cut2_ZL_LHC   = N_tot_ZL_diphoton * epsilon_0_ZL * part_epsilon_1_ZL * part_epsilon_2_ZL
-    kin_eff_ZL_LHC  = N_cut2_ZL_LHC / N_em_ZL_LHC
-    tot_eff_ZL_LHC  = N_cut2_ZL_LHC / N_tot_L_LHC
+    N_tot_L_LHC     = xsection_L    * lum                                      #total longitudinal events number
+    N_tot_ZL_LHC    = N_tot_L_LHC   * epsilon_ZL                              #ZLH events number
+    N_tot_ZL_diph   = N_tot_ZL_LHC  * BR
+    N_em_ZL_LHC     = N_tot_ZL_diph * epsilon_0_ZL
+    N_cut1_ZL_LHC   = N_em_ZL_LHC   * part_epsilon_1_ZL
+    N_cut2_ZL_LHC   = N_cut1_ZL_LHC * part_epsilon_2_ZL
 
+    kin_eff_ZL_LHC  = N_cut2_ZL_LHC / N_em_ZL_LHC                           #kinematic cuts efficiency
+    chan_eff_ZL_LHC = N_cut2_ZL_LHC / N_tot_ZL_diph                           #channel efficiency
+    tot_eff_ZL_LHC  = N_cut2_ZL_LHC / N_tot_ZL_LHC
 
 
    # ZTH
-    N_tot_T_LHC    = xsection_T * lum
-    N_tot_ZT_LHC    = xsection_T * lum * epsilon_ZT
-    N_tot_ZT_diphoton = N_tot_ZT_LHC * BR
-    N_em_ZT_LHC     = N_tot_ZT_diphoton * epsilon_0_ZT
-    N_cut1_ZT_LHC   = N_tot_ZT_diphoton * epsilon_0_ZT * part_epsilon_1_ZT
-    N_cut2_ZT_LHC   = N_tot_ZT_diphoton * epsilon_0_ZT * part_epsilon_1_ZT * part_epsilon_2_ZT
+    N_tot_T_LHC     = xsection_T    * lum
+    N_tot_ZT_LHC    = N_tot_T_LHC   * epsilon_ZT
+    N_tot_ZT_diph   = N_tot_ZT_LHC  * BR
+    N_em_ZT_LHC     = N_tot_ZT_diph * epsilon_0_ZT
+    N_cut1_ZT_LHC   = N_em_ZT_LHC   * part_epsilon_1_ZT
+    N_cut2_ZT_LHC   = N_cut1_ZT_LHC * part_epsilon_2_ZT
+
     kin_eff_ZT_LHC  = N_cut2_ZT_LHC / N_em_ZT_LHC
-    tot_eff_ZT_LHC  = N_cut2_ZT_LHC / N_tot_T_LHC
+    chan_eff_ZT_LHC = N_cut2_ZT_LHC / N_tot_ZT_diph                           #channel efficiency
+    tot_eff_ZT_LHC  = N_cut2_ZT_LHC / N_tot_ZT_LHC
 
     # WLH
-    N_tot_L_LHC    = xsection_L * lum
-    N_tot_WL_LHC    = xsection_L * lum * epsilon_WL
-    N_tot_WL_diphoton = N_tot_WL_LHC * BR
-    N_em_WL_LHC     = N_tot_WL_diphoton * epsilon_0_WL
-    N_cut1_WL_LHC   = N_tot_WL_diphoton * epsilon_0_WL * part_epsilon_1_WL
-    N_cut2_WL_LHC   = N_tot_WL_diphoton * epsilon_0_WL * part_epsilon_1_WL * part_epsilon_2_WL
-    N_cut3_WL_LHC   = N_tot_WL_diphoton * epsilon_0_WL * part_epsilon_1_WL * part_epsilon_2_WL * part_epsilon_3_WL
-    kin_eff_WL_LHC  = N_cut3_WL_LHC / N_em_WL_LHC
-    tot_eff_WL_LHC  = N_cut3_WL_LHC / N_tot_L_LHC
+    N_tot_L_LHC     = xsection_L    * lum
+    N_tot_WL_LHC    = N_tot_L_LHC   * epsilon_WL
+    N_tot_WL_diph   = N_tot_WL_LHC  * BR
+    N_em_WL_LHC     = N_tot_WL_diph * epsilon_0_WL
+    N_cut1_WL_LHC   = N_em_WL_LHC   * part_epsilon_1_WL
+    N_cut2_WL_LHC   = N_cut1_WL_LHC * part_epsilon_2_WL
+    N_cut3_WL_LHC   = N_cut2_WL_LHC * part_epsilon_3_WL
+
+    kin_eff_WL_LHC  = N_cut2_WL_LHC / N_em_WL_LHC
+    chan_eff_WL_LHC = N_cut2_WL_LHC / N_tot_WL_diph                           #channel efficiency
+    tot_eff_WL_LHC  = N_cut2_WL_LHC / N_tot_WL_LHC
 
     # WTH
-    N_tot_T_LHC    = xsection_T * lum
-    N_tot_WT_LHC    = xsection_T * lum * epsilon_WT
-    N_tot_WT_diphoton = N_tot_WT_LHC * BR
-    N_em_WT_LHC     = N_tot_WT_diphoton * epsilon_0_WT
-    N_cut1_WT_LHC   = N_tot_WT_diphoton * epsilon_0_WT * part_epsilon_1_WT
-    N_cut2_WT_LHC   = N_tot_WT_diphoton * epsilon_0_WT * part_epsilon_1_WT * part_epsilon_2_WT
-    N_cut3_WT_LHC   = N_tot_WT_diphoton * epsilon_0_WT * part_epsilon_1_WT * part_epsilon_2_WT * part_epsilon_3_WT
-    kin_eff_WT_LHC  = N_cut3_WT_LHC / N_em_WT_LHC
-    tot_eff_WT_LHC  = N_cut3_WT_LHC / N_tot_T_LHC
+    N_tot_T_LHC     = xsection_T    * lum
+    N_tot_WT_LHC    = N_tot_T_LHC   * epsilon_WT
+    N_tot_WT_diph   = N_tot_WT_LHC  * BR
+    N_em_WT_LHC     = N_tot_WT_diph * epsilon_0_WT
+    N_cut1_WT_LHC   = N_em_WT_LHC   * part_epsilon_1_WT
+    N_cut2_WT_LHC   = N_cut1_WT_LHC * part_epsilon_2_WT
+    N_cut3_WT_LHC   = N_cut2_WT_LHC * part_epsilon_3_WT
+
+    kin_eff_WT_LHC  = N_cut2_WT_LHC / N_em_WT_LHC
+    chan_eff_WT_LHC = N_cut2_WT_LHC / N_tot_WT_diph                           #channel efficiency
+    tot_eff_WT_LHC  = N_cut2_WT_LHC / N_tot_WT_LHC
 
 
     data = [
-            ["Total V{i}H events",                  f"{N_tot_L_LHC:.0f}",    f"{N_tot_T_LHC:.0f}",    f"{N_tot_L_LHC:.0f}",    f"{N_tot_T_LHC:.0f}"],
-            ["Total ch events",               f"{N_tot_ZL_LHC:.0f}",    f"{N_tot_ZT_LHC:.0f}",    f"{N_tot_WL_LHC:.0f}",    f"{N_tot_WT_LHC:.0f}"],
-            ["Total γγ events",               f"{N_tot_ZL_diphoton:.0f}",    f"{N_tot_ZT_diphoton:.0f}",    f"{N_tot_WL_diphoton:.0f}",    f"{N_tot_WT_diphoton:.0f}"],
-            ["Events with e/mu",              f"{N_em_ZL_LHC:.0f}",     f"{N_em_ZT_LHC:.0f}",     f"{N_em_WL_LHC:.0f}",     f"{N_em_WT_LHC:.0f}"],
-            ["Events after cut1",             f"{N_cut1_ZL_LHC:.0f}",   f"{N_cut1_ZT_LHC:.0f}",   f"{N_cut1_WL_LHC:.0f}",   f"{N_cut1_WT_LHC:.0f}"],
-            ["Events after cut1, cut2",       f"{N_cut2_ZL_LHC:.0f}",   f"{N_cut2_ZT_LHC:.0f}",   f"{N_cut2_WL_LHC:.0f}",   f"{N_cut2_WT_LHC:.0f}"],
+            ["Total V{i}H events",            f"{N_tot_L_LHC:.0f}",    f"{N_tot_T_LHC:.0f}",    f"{N_tot_L_LHC:.0f}",    f"{N_tot_T_LHC:.0f}"],
+            ["Total ch events",               f"{N_tot_ZL_LHC:.0f}",   f"{N_tot_ZT_LHC:.0f}",    f"{N_tot_WL_LHC:.0f}",    f"{N_tot_WT_LHC:.0f}"],
+            ["Total γγ events",               f"{N_tot_ZL_diph:.0f}",  f"{N_tot_ZT_diph:.0f}",    f"{N_tot_WL_diph:.0f}",    f"{N_tot_WT_diph:.0f}"],
+            ["Events with e/mu",              f"{N_em_ZL_LHC:.0f}",    f"{N_em_ZT_LHC:.0f}",     f"{N_em_WL_LHC:.0f}",     f"{N_em_WT_LHC:.0f}"],
+            ["Events after cut1",             f"{N_cut1_ZL_LHC:.0f}",  f"{N_cut1_ZT_LHC:.0f}",   f"{N_cut1_WL_LHC:.0f}",   f"{N_cut1_WT_LHC:.0f}"],
+            ["Events after cut1, cut2",       f"{N_cut2_ZL_LHC:.0f}",  f"{N_cut2_ZT_LHC:.0f}",   f"{N_cut2_WL_LHC:.0f}",   f"{N_cut2_WT_LHC:.0f}"],
             ["Events after cut1, cut2, cut3", "-",                      "-",                      f"{N_cut3_WL_LHC:.0f}",   f"{N_cut3_WT_LHC:.0f}"],
-            ["Kinematic cuts efficiency",     f"{kin_eff_ZL_LHC:.2f}",  f"{kin_eff_ZT_LHC:.2f}",  f"{kin_eff_WL_LHC:.2f}",  f"{kin_eff_WT_LHC:.2f}"],
+            ["Kinematic cuts efficiency",     f"{kin_eff_ZL_LHC:.2f}", f"{kin_eff_ZT_LHC:.2f}",  f"{kin_eff_WL_LHC:.2f}",  f"{kin_eff_WT_LHC:.2f}"],
+            ["Channel efficiency",            f"{chan_eff_ZL_LHC:.2f}",f"{chan_eff_ZT_LHC:.2f}",   f"{chan_eff_WL_LHC:.2f}",   f"{chan_eff_WT_LHC:.2f}"],
             ["Total efficiency",              f"{tot_eff_ZL_LHC:.5f}",  f"{tot_eff_ZT_LHC:.5f}",  f"{tot_eff_WL_LHC:.4f}",  f"{tot_eff_WT_LHC:.4f}"]
             ]
 
@@ -839,7 +855,7 @@ def main():
     df_channel = pd.DataFrame(data, columns=["", "ZLH", "ZTH", "WLH", "WTH"])
 
     print("\n" + "="*60)
-    print("{:^60}".format("H > GAMMA GAMMA (LHC)"))
+    print("{:^60}".format("H > γγ (LHC)"))
     print("="*60 + "\n")
     print(tabulate(df_channel.values.tolist(), headers=df_channel.columns.tolist(), tablefmt="grid"))
 
