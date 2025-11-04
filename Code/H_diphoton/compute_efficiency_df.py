@@ -73,7 +73,7 @@ def main():
         if e_id % 10000 == 0:
             print(f"Processing event {e_id}")
 
-        if e_id > 1000:    break
+        #if e_id > 1000:    break
 
         event_type = f_event_type(particle_list)
 
@@ -371,7 +371,7 @@ def main():
         if e_id % 10000 == 0:
             print(f"Processing event {e_id}")
 
-        if e_id > 1000: break
+        #if e_id > 1000: break
 
         event_type = f_event_type(particle_list)
 
@@ -702,8 +702,8 @@ def main():
     part_eff_list_channel = []
 
     for ch in ["ZLH", "ZTH", "WLH", "WTH"]:
-        epsilon     = df_channel.iloc[0][ch] / 5000
-        epsilon_0   = df_channel.iloc[1][ch] / 5000
+        epsilon     = df_channel.iloc[0][ch] / 50000
+        epsilon_0   = df_channel.iloc[1][ch] / 50000
         epsilon_1   = df_channel.iloc[2][ch] / df_channel.iloc[1][ch]
         epsilon_2   = df_channel.iloc[3][ch] / df_channel.iloc[1][ch]
 
@@ -823,10 +823,14 @@ def main():
         part_1 = df_1.Count().GetValue() / df_0.Count().GetValue()
         part_2 = df_2.Count().GetValue() / df_1.Count().GetValue()
 
+        print(f"{part_1} = {df_1.Count().GetValue()} / {df_0.Count().GetValue()}")
+        print(f"{part_2} = {df_2.Count().GetValue()} / {df_1.Count().GetValue()}")
+
         if df_part_tot.at[4, col] != -1:
             df_3   = df_2.Filter(chan_ordered_cut_list[2])
             part_3 = df_3.Count().GetValue() / df_2.Count().GetValue()
             df_part_tot.at[4, col] = part_3
+            print(f"{part_3} = {df_3.Count().GetValue()} / {df_2.Count().GetValue()}")
 
         df_part_tot.at[2, col] = part_1
         df_part_tot.at[3, col] = part_2
@@ -840,6 +844,7 @@ def main():
 
     print(tabulate(df_part_tot.values.tolist(), headers=df_part_tot.columns.tolist(), tablefmt="grid"))
 
+    return 0 
 
     '''
     epsilon_ZL = df_channel[1, "ZLH"] / 50000
