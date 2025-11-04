@@ -689,7 +689,7 @@ def main():
     df_cumulative = pd.DataFrame(data_cumulative, columns=["", "ZLH", "ZTH", "WLH", "WTH"])
 
     print("\n" + "="*60)
-    print("{:^60}".format("H > γγ"))
+    print("{:^60}".format("H > γγ [cumulative values]"))
     print("="*60 + "\n")
     print(tabulate(df_cumulative.values.tolist(), headers=df_cumulative.columns.tolist(), tablefmt="grid"))
     #-------------------------------------------------------------------------------------------------------
@@ -762,31 +762,36 @@ def main():
         rows.append(epsilon_row)
         
 
-    df_f = pd.DataFrame(rows, columns = columns)
+    df_part_tot = pd.DataFrame(rows, columns = columns)
 
     print("\n" + "="*120)
     print("{:^120}".format("Cumulative and Total efficiencies"))
     print("="*120 + "\n")
 
-    print(tabulate(df_f.values.tolist(), headers=df_f.columns.tolist(), tablefmt="grid"))
+    print(tabulate(df_part_tot.values.tolist(), headers=df_part_tot.columns.tolist(), tablefmt="grid"))
 
-    return 0
+    
 
     print("Ordering cuts")
 
     cut_list = ["cut1", "cut2", "cut3"]
     channels = ["ZLH total eff", "ZTH total eff", "WLH total eff", "WTH total eff"]
+    channels = ["ZLH", "ZTH", "WLH", "WTH"]
     columns = ["",
                 "ZLH cumulative eff", "ZLH total eff", 
                 "ZTH cumulative eff", "ZTH total eff",
                 "WLH cumulative eff", "WLH total eff",
                 "WTH cumulative eff", "WTH total eff"
                 ]
-                
-    for col in columns[2::2]:
-        
+    
+    df_list = [df_ZLH, df_ZTH, df_WLH, df_WTH]
+
+    i = 0
+    for ch in channels:
+
+        col = f"{ch} total eff"
         #re-arranging
-        values = df_f.loc[2:4, col].copy()
+        values = df_part_tot.loc[2:4, col].copy()
         num_values = [float(v) for v in values if v != -1]
 
         ordered_val = sorted(num_values)
@@ -799,13 +804,41 @@ def main():
         j = 0
         for m in range(2, 5): 
 
-            if df_f.at[m, col] == -1:
+            if df_part_tot.at[m, col] == -1:
                 continue
 
-            df_f.at[m, col] = f"{ordered_val[j]:.2f}"
+            df_part_tot.at[m, col] = ordered_val[j]
             j += 1
 
-    #for col in columns[1::2]:
+
+        col = f"{ch} cumulative eff"
+        cut0 = "cut0" + f"_{ch}"
+        chan_ordered_cut_list = [ordered_cut_list[i] + f"_{ch}" for i in range(len(ordered_cut_list))]
+
+        print(df_list[i])
+        df_0 = df_list[i].Filter(cut0)
+        df_1 = df_0.Filter(chan_ordered_cut_list[0])
+        df_2 = df_1.Filter(chan_ordered_cut_list[1])
+
+        part_1 = df_1.Count().GetValue() / df_0.Count().GetValue()
+        part_2 = df_2.Count().GetValue() / df_1.Count().GetValue()
+
+        if df_part_tot.at[4, col] != -1:
+            df_3   = df_2.Filter(chan_ordered_cut_list[2])
+            part_3 = df_3.Count().GetValue() / df_2.Count().GetValue()
+            df_part_tot.at[4, col] = part_3
+
+        df_part_tot.at[2, col] = part_1
+        df_part_tot.at[3, col] = part_2
+        
+
+        i += 1
+
+    print("\n" + "="*120)
+    print("{:^120}".format("Cumulative and Total efficiencies [ordered]"))
+    print("="*120 + "\n")
+
+    print(tabulate(df_part_tot.values.tolist(), headers=df_part_tot.columns.tolist(), tablefmt="grid"))
 
 
     '''
