@@ -208,15 +208,20 @@ def main():
 
         #add channel computed values to list
         lhc_values_channel.append(
-                                  [N_tot_LHC, N_tot_LHC, N_tot_diph, N_em_LHC, N_cut1_LHC, N_cut2_LHC, N_cut3_LHC, kin_epsilon, chan_epsilon, tot_epsilon]
+                                  [
+                                   f"{N_tot_LHC:.0f}", f"{N_tot_LHC:.0f}", f"{N_tot_diph:.0f}", f"{N_em_LHC:.0f}", f"{N_cut1_LHC:.0f}", f"{N_cut2_LHC:.0f}", f"{N_cut3_LHC:.0f}",
+                                   f"{kin_epsilon:.2f}", f"{chan_epsilon:.2f}", f"{tot_epsilon:.4f}"
+                                  ]
                                  )
 
         tot_eff_list_channel.append(
-                                [epsilon, epsilon_0, epsilon_1, epsilon_2, epsilon_3, epsilon_tot]
-                                )
+                                    [f"{epsilon:.2f}", f"{epsilon_0:.2f}", f"{epsilon_1:.2f}", f"{epsilon_2:.2f}", f"{epsilon_3:.2f}", f"{epsilon_tot:.2f}"]
+                                   )
+
         part_eff_list_channel.append(
-                                [epsilon, part_epsilon_0, part_epsilon_1, part_epsilon_2, part_epsilon_3, epsilon_tot]
-                                )
+                                    [f"{epsilon:.2f}", f"{part_epsilon_0:.2f}", f"{part_epsilon_1:.2f}", f"{part_epsilon_2:.2f}", f"{part_epsilon_3:.2f}", f"{epsilon_tot:.2f}"]
+                                    )
+
         
     
     tot_eff_array_channel  = np.array(tot_eff_list_channel)
@@ -263,9 +268,9 @@ def main():
 
     df_part_tot = pd.DataFrame(rows, columns = columns)
 
-    print("\n" + "="*120)
-    print("{:^120}".format("Cumulative and Total efficiencies"))
-    print("="*120 + "\n")
+    print("\n" + "="*183)
+    print("{:^183}".format("Cumulative and Total efficiencies"))
+    print("="*183 + "\n")
 
     print(tabulate(df_part_tot.values.tolist(), headers=df_part_tot.columns.tolist(), tablefmt="grid"))
 
@@ -306,9 +311,9 @@ def main():
 
     df_LHC = pd.DataFrame(rows, columns = columns)
 
-    print("\n" + "="*60)
-    print("{:^60}".format("H > γγ (LHC)"))
-    print("="*60 + "\n")
+    print("\n" + "="*82)
+    print("{:^82}".format("H > γγ (LHC)"))
+    print("="*82 + "\n")
 
     print(tabulate(df_LHC.values.tolist(), headers=df_LHC.columns.tolist(), tablefmt="grid"))
 
