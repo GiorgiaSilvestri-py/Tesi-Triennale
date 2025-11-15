@@ -1,5 +1,6 @@
 from array import array
 import os
+import sys
 import pandas as pd
 import pickle
 from tabulate import tabulate
@@ -15,15 +16,18 @@ def compute_deltaR(vec1, vec2):
 
 def main():
 
-    #load root dataframes
+    # region Load df
+
     df_ZLH = ROOT.RDataFrame("tree_ZLH", "complete_ZLH.root")
     df_WLH = ROOT.RDataFrame("tree_WLH", "complete_WLH.root")
     df_ZTH = ROOT.RDataFrame("tree_ZTH", "complete_ZTH.root")
     df_WTH = ROOT.RDataFrame("tree_WTH", "complete_WTH.root")
     
+    # endregion
     
     #------------------------------------------------------------------------------------------------------------------------------------
 
+    # region Define Cuts
     
     #DEFINE CUTS - VLH
     
@@ -51,12 +55,16 @@ def main():
             .Define("cut1_WTH", 'pt_leading > leading_th && pt_subleading > subleading_th')\
             .Define("cut2_WTH", 'event_type == "e/mu" && R1 > 1.0 && R2 > 1.0')\
             .Define("cut3_WTH", 'pt_MET > 45')
-    
-    #------------------------------------------------------------------------------------------------------------------------------------
 
-    #############################################################################################
+    # endregion
+    
+    #--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    # region Channel Evts df [tot & cumulative]
+
+    #########################################################################################################################################################
     #CHANNEL DATAFRAME
-    #############################################################################################
+    #########################################################################################################################################################
 
     N_tot_ZLH    = df_ZLH.Count().GetValue()
     N_lep_ZLH    = df_ZLH.Filter("cut0_ZLH").Count().GetValue()
@@ -103,12 +111,12 @@ def main():
     print(tabulate(df_channel.values.tolist(), headers=df_channel.columns.tolist(), tablefmt="grid"))
 
 
-    #------------------------------------------------------------------------------------------------------------------------------------
+    #--------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-    #############################################################################################
+    #########################################################################################################################################################
     #CHANNEL CUMULATIVE DATAFRAME
-    #############################################################################################
+    #########################################################################################################################################################
 
     N_lep_ZLH    = df_ZLH.Filter("cut0_ZLH").Count().GetValue()
     N_cut1_ZLH   = df_ZLH.Filter("cut0_ZLH && cut1_ZLH").Count().GetValue()
@@ -144,13 +152,15 @@ def main():
     print("="*53 + "\n")
     print(tabulate(df_cumulative.values.tolist(), headers=df_cumulative.columns.tolist(), tablefmt="grid"))
 
+    # endregion
 
-    #------------------------------------------------------------------------------------------------------------------------------------
 
-    #############################################################################################
-    #EFFICIENCIES & LHC VALUES
-    #############################################################################################
+    #--------------------------------------------------------------------------------------------------------------------------------------------------------
 
+
+    # region Efficiencies and LHC evts number
+
+   
     print("Computing efficiencies")
     
     tot_eff_list_channel  = []
@@ -229,9 +239,14 @@ def main():
     lhc_values_array       = np.array(lhc_values_channel)
 
 
-    #############################################################################################
+    # endregion
+
+
+    #########################################################################################################################################################
     #CHANNEL CUMULATIVE and TOTAL EFFICIENCIES
-    #############################################################################################
+    #########################################################################################################################################################
+
+    # region Cumulative and Total efficiencies
 
     columns = [
                "",
@@ -274,12 +289,13 @@ def main():
 
     print(tabulate(df_part_tot.values.tolist(), headers=df_part_tot.columns.tolist(), tablefmt="grid"))
 
+    # endregion
 
+    # region LHC values
 
     #############################################################################################
     #CHANNEL LHC VALUES
     #############################################################################################
-
 
     columns = ["", "ZLH", "ZTH", "WLH", "WTH"]
     row_index = ["Total V{i}H events", 
@@ -316,6 +332,92 @@ def main():
     print("="*82 + "\n")
 
     print(tabulate(df_LHC.values.tolist(), headers=df_LHC.columns.tolist(), tablefmt="grid"))
+
+    # endregion
+
+    #------------------------------------------------------------------------------------------------------------------------
+
+    # region Ordering efficiencies
+
+    print("Ordering cuts")
+
+    cut_list = ["cut1", "cut2", "cut3"]
+    channels = ["ZLH", "ZTH", "WLH", "WTH"]
+    
+    df_list = [df_ZLH, df_ZTH, df_WLH, df_WTH]
+
+    i = 0                                                                               #variable for loop over df_list
+    for ch in channels:
+
+        col = f"{ch} total eff"
+
+        #re-arranging
+        values     = df_part_tot.loc[2:4, col].copy()
+        num_values = [float(v) for v in values if v != -1]
+
+        ordered_val = sorted(num_values)
+        print("Ordered total efficiencies:", ordered_val)
+        sorted_indices = sorted(range(len(num_values)), key=lambda n: num_values[n])
+
+        ordered_cut_list = [cut_list[n] for n in sorted_indices]
+        print(f"Ordered cuts for {col}:", ordered_cut_list)
+
+        j = 0
+        for m in range(2, 5): 
+
+            if df_part_tot.at[m, col] == -1:
+                continue
+
+            df_part_tot.at[m, col] = ordered_val[j]
+            j += 1
+
+
+        col  = f"{ch} cumulative eff"
+        cut0 = "cut0" + f"_{ch}"
+        chan_ordered_cut_list = [ordered_cut_list[n] + f"_{ch}" for n in range(len(ordered_cut_list))]
+
+        print(df_list[i])
+
+        #re-define cut order
+        df_0 = df_list[i].Filter(cut0)
+        df_1 = df_0.Filter(chan_ordered_cut_list[0])
+        df_2 = df_1.Filter(chan_ordered_cut_list[1])
+
+        #re-define partial efficiencies
+        part_1 = df_1.Count().GetValue() / df_0.Count().GetValue()
+        part_2 = df_2.Count().GetValue() / df_1.Count().GetValue()
+
+        #skip if cut doesn't exist
+        if df_part_tot.at[4, col] != -1:
+            df_3   = df_2.Filter(chan_ordered_cut_list[2])
+            part_3 = df_3.Count().GetValue() / df_2.Count().GetValue()
+
+            #overwrite df
+            df_part_tot.at[4, col] = part_3
+
+        df_part_tot.at[2, col] = part_1
+        df_part_tot.at[3, col] = part_2
+
+        i += 1
+
+
+
+    print("\n" + "="*120)
+    print("{:^120}".format("Cumulative and Total efficiencies [ordered]"))
+    print("="*120 + "\n")
+
+    columns  = [
+                "",
+                "ZLH cumulative eff", "ZLH total eff", 
+                "ZTH cumulative eff", "ZTH total eff",
+                "WLH cumulative eff", "WLH total eff",
+                "WTH cumulative eff", "WTH total eff"
+                ]
+
+    print(tabulate(df_part_tot.values.tolist(), headers=df_part_tot.columns.tolist(), tablefmt="grid"))
+
+
+    # endregion
 
 
 if __name__ == '__main__':
