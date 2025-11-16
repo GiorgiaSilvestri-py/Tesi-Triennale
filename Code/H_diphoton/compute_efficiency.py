@@ -2,13 +2,6 @@ import pandas as pd
 from tabulate import tabulate
 from utils_nonlhe import *
 
-def compute_deltaR(vec1, vec2):
-
-    deltaphi = vec1.deltaphi(vec2)
-    deltaeta = abs(vec1.eta - vec2.eta)
-
-    return np.sqrt( (deltaphi)**2 + (deltaeta)**2 )
-
 def main():
 
     # region Load df
