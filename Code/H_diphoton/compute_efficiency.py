@@ -1,11 +1,6 @@
-from array import array
-import os
-import sys
 import pandas as pd
-import pickle
 from tabulate import tabulate
 from utils_nonlhe import *
-import vector
 
 def compute_deltaR(vec1, vec2):
 
@@ -25,7 +20,7 @@ def main():
     
     # endregion
     
-    #------------------------------------------------------------------------------------------------------------------------------------
+    #--------------------------------------------------------------------------------------------------------------------------------------------------------
 
     # region Define Cuts
     
@@ -99,7 +94,7 @@ def main():
             ["Events after cut1 only",  N_cut1_ZLH,  N_cut1_ZTH,  N_cut1_WLH,   N_cut1_WTH],
             ["Events after cut2 only",  N_cut2_ZLH,  N_cut2_ZTH,  N_cut2_WLH,   N_cut2_WTH],
             ["Events after cut3 only",  "-",         "-",         N_cut3_WLH,   N_cut3_WTH],
-            ["Eventi selezionati",      N_cut12_ZLH, N_cut12_ZTH, N_cut123_WLH, N_cut123_WTH]
+            ["Selected events",         N_cut12_ZLH, N_cut12_ZTH, N_cut123_WLH, N_cut123_WTH]
             ]
 
 
@@ -293,9 +288,9 @@ def main():
 
     # region LHC values
 
-    #############################################################################################
+    #########################################################################################################################################################
     #CHANNEL LHC VALUES
-    #############################################################################################
+    #########################################################################################################################################################
 
     columns = ["", "ZLH", "ZTH", "WLH", "WTH"]
     row_index = ["Total V{i}H events", 
@@ -335,7 +330,7 @@ def main():
 
     # endregion
 
-    #------------------------------------------------------------------------------------------------------------------------
+    #--------------------------------------------------------------------------------------------------------------------------------------------------------
 
     # region Ordering efficiencies
 
@@ -353,7 +348,7 @@ def main():
 
         #re-arranging
         values     = df_part_tot.loc[2:4, col].copy()
-        num_values = [float(v) for v in values if v != -1]
+        num_values = [float(v) for v in values if float(v) > 0]
 
         ordered_val = sorted(num_values)
         print("Ordered total efficiencies:", ordered_val)
@@ -364,8 +359,8 @@ def main():
 
         j = 0
         for m in range(2, 5): 
-
-            if df_part_tot.at[m, col] == -1:
+    
+            if float(df_part_tot.at[m, col]) < 0:
                 continue
 
             df_part_tot.at[m, col] = ordered_val[j]
@@ -375,8 +370,6 @@ def main():
         col  = f"{ch} cumulative eff"
         cut0 = "cut0" + f"_{ch}"
         chan_ordered_cut_list = [ordered_cut_list[n] + f"_{ch}" for n in range(len(ordered_cut_list))]
-
-        print(df_list[i])
 
         #re-define cut order
         df_0 = df_list[i].Filter(cut0)
@@ -388,23 +381,22 @@ def main():
         part_2 = df_2.Count().GetValue() / df_1.Count().GetValue()
 
         #skip if cut doesn't exist
-        if df_part_tot.at[4, col] != -1:
+        if float(df_part_tot.at[4, col]) > 0:
             df_3   = df_2.Filter(chan_ordered_cut_list[2])
             part_3 = df_3.Count().GetValue() / df_2.Count().GetValue()
 
             #overwrite df
-            df_part_tot.at[4, col] = part_3
+            df_part_tot.at[4, col] = f"{part_3:.2f}"
 
-        df_part_tot.at[2, col] = part_1
-        df_part_tot.at[3, col] = part_2
+        df_part_tot.at[2, col] = f"{part_1:.2f}"
+        df_part_tot.at[3, col] = f"{part_2:.2f}"
 
         i += 1
 
 
-
-    print("\n" + "="*120)
-    print("{:^120}".format("Cumulative and Total efficiencies [ordered]"))
-    print("="*120 + "\n")
+    print("\n" + "="*183)
+    print("{:^183}".format("Cumulative and Total efficiencies [ordered]"))
+    print("="*183 + "\n")
 
     columns  = [
                 "",
@@ -418,7 +410,6 @@ def main():
 
 
     # endregion
-
 
 if __name__ == '__main__':
     main()
