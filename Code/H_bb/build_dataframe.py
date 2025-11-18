@@ -48,7 +48,7 @@ def main():
         if e_id % 10000 == 0:
             print(f"Processing event {e_id}")
 
-        if e_id > 1000:    break
+        #if e_id > 1000:    break
 
         event_type = f_event_type(part_dict)
 
@@ -223,7 +223,7 @@ def main():
         if e_id % 10000 == 0:
             print(f"Processing event {e_id}")
 
-        if e_id > 1000:    break
+        #if e_id > 1000:    break
 
         event_type = f_event_type(part_dict)
 
