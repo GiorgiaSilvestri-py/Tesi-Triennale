@@ -1,17 +1,6 @@
 from array import array
-import os
-import pandas as pd
-import pickle
-from tabulate import tabulate
 from utils_nonlhe import *
 import vector
-
-def compute_deltaR(vec1, vec2):
-
-    deltaphi = vec1.deltaphi(vec2)
-    deltaeta = abs(vec1.eta - vec2.eta)
-
-    return np.sqrt( (deltaphi)**2 + (deltaeta)**2 )
 
 def main():
 

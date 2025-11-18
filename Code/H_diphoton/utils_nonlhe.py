@@ -772,6 +772,14 @@ def get_phi_of(p_id, events_dict, apply_smearing = False):
         phi_dict[event_id] = p_fm.phi
 
     return phi_dict
+
+
+def compute_deltaR(vec1, vec2):
+
+    deltaphi = vec1.deltaphi(vec2)
+    deltaeta = abs(vec1.eta - vec2.eta)
+
+    return np.sqrt( (deltaphi)**2 + (deltaeta)**2 )
     
     
 def get_thetastar_of(V_fm_dict, H_fm_dict):
