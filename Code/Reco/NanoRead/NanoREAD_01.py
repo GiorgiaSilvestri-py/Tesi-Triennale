@@ -42,7 +42,7 @@ def read_file(filename, maxEvents=50):
 
             print(pid, status)
 
-            if status == 1 :  # final state particle
+            if status == 1 :                    #final-state particles only
 
                 if abs(pid) == 11:
                     e_vec = build_4vec(t.LHEPart_pt[j], t.LHEPart_eta[j],
