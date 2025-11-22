@@ -97,7 +97,7 @@ def read_file(filename, maxEvents=50):
 def expand_columns_vectors(df):
     vector_cols = []
     for col in df.columns:
-        # controlla se la colonna contiene vector.obj
+        
         if df[col].apply(lambda v: hasattr(v, "pt")).all():
             vector_cols.append(col)
             df[f"{col}_pt"]   = df[col].apply(lambda v: v.pt)
